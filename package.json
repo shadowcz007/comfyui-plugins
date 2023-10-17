@@ -28,6 +28,7 @@
   "dependencies": {
     "@ant-design/icons": "^5.2.6",
     "@electron/remote": "^2.0.12",
+    "@google/model-viewer": "^3.3.0",
     "antd": "^5.10.1",
     "electron-context-menu": "^3.6.1",
     "electron-fetch": "^1.9.1",

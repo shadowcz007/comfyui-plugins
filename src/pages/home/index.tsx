@@ -5,6 +5,10 @@ import { useEffect } from "react";
 import { Button, ConfigProvider, Space, Avatar, Card } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 
+
+import '@google/model-viewer/dist/model-viewer';
+
+
 const { Meta } = Card;
 
 import { setup, plugins, extensionPoints, activationPoints } from 'pluggable-electron/renderer'
@@ -211,6 +215,19 @@ export const App = () => {
                 Array.from(pluginItems, (item: any, index: number) => pluginCard(item.name, item.url, index))
                 // JSON.stringify(pluginItems, null, 2)
             }
+
+            <model-viewer
+                style={{
+                    width: 200,
+                    height: 200
+                }}
+                // camera-controls
+                // disable-zoom
+                // touch-action="pan-y" 
+
+                alt="A 3D model of a sphere"
+                src="https://modelviewer.dev/shared-assets/models/reflective-sphere.gltf">
+            </model-viewer>
 
         </div>
     );
