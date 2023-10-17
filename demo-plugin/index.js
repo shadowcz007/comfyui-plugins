@@ -1,7 +1,10 @@
-// Provide menu item as plain object
-const newItem = { text: "Item from object" }
+export function init (extensionPoints) {
+  
+  // varFromExtensionPoint 从app传来的变量
+  const yourCustomExtension = (varFromExtensionPoint) => {
+    console.log('yourCustomExtension',varFromExtensionPoint)
+  }
 
-// Register all the above functions and objects with the relevant extension points
-export function init({ register }) {
-  register('extend-menu', 'newItem', newItem)
+// app 是应用暴露的api集合
+ extensionPoints.register( 'app', 'model-viewer', yourCustomExtension )
 }

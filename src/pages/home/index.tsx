@@ -2,30 +2,38 @@
 import { createRoot } from "react-dom/client";
 import React from "react";
 import { useEffect } from "react";
+import { Button, ConfigProvider, Space, Avatar, Card } from 'antd';
+import { CloseOutlined } from '@ant-design/icons';
+
+const { Meta } = Card;
+
+import { setup, plugins, extensionPoints, activationPoints } from 'pluggable-electron/renderer'
+
 import "./index.css";
 
 import i18n from "i18next";
 import { rendererInit } from '../../i18n/config'
-
 rendererInit()
 
-// This file is required by the index.html file and will
-// be executed in the renderer process for that window.
-// Access the plugins facade through window.plugins
-// as set up in preload.js
 
-import { setup, plugins, extensionPoints, activationPoints } from 'pluggable-electron/renderer'
 
 // Set Pluggable Electron up in the renderer
 async function setupPE() {
-    // Enable activation point management
-    setup({ importer: (pluginPath) => import(pluginPath) })
+    // Enable the activation points
+    setup({
+        importer: async (pluginPath) => import( /* webpackIgnore: true */ pluginPath)
+    })
 
-    // Register all active plugins with their activation points
+    // Get plugins that have been installed previously
+    // and register them with their activation points
     await plugins.registerActive()
 
+    // insert at any point after the plugins have been registered
+    await activationPoints.trigger('init')
 }
 setupPE()
+
+
 
 
 declare const window: Window &
@@ -102,10 +110,48 @@ declare const window: Window &
 //     extensionPoints.execute('display-img', img)
 // })
 
+const pluginCard = (name: string, url: string, key: any) => (
+    <Card
+        size="small"
+        style={{ width: 300 }}
+        key={key}
+        // cover={
+        //     <img
+        //         alt="example"
+        //         src="https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png"
+        //     />
+        // }
+        actions={[
+
+            <CloseOutlined key="edit"
+                onClick={async () => {
+                    const res = await plugins.uninstall([name])
+                    console.log(res ? 'Plugin successfully uninstalled' : 'Plugin could not be uninstalled')
+                }}
+            />,
+
+        ]}
+    >
+        <Meta
+            avatar={<Avatar src="https://xsgames.co/randomusers/avatar.php?g=pixel" />}
+            title={name}
+            description={url}
+        />
+    </Card>
+);
+
+
+
 
 export const App = () => {
+
+    const [pluginItems, setPlugins] = React.useState([]);
+    const [display, setDisplay] = React.useState(true);
+
     useEffect(() => {
-        //   let backFn: any = backgroundHandle();
+        window.electron.getPluginsList().then((items: any) => {
+            setPlugins(items);
+        })
         return () => {
             // if (backFn) {
             //   backFn();
@@ -115,46 +161,56 @@ export const App = () => {
 
     return (
         <div>
+            <ConfigProvider
+                theme={{
+                    token: {
+                        // Seed Token，影响范围大
+                        colorPrimary: '#00b96b',
+                        borderRadius: 2,
 
-            <h2  >{i18n.t('Manage plugin lifecycle')}</h2>
-            {/* <label  >Package file:
-                    <input type="file" name="plugin-file" />
-                </label> */}
+                        // 派生变量，影响范围小
+                        colorBgContainer: '#f6ffed',
+                    },
+                }}
+            >
+                <Space
+                    className="menu-btns"
+                >
+                    {/* <h2  >{i18n.t('Manage plugin lifecycle')}</h2> */}
 
-            {/* Install a new plugin on clicking the install button */}
-            <button onClick={
-                async (e) => {
-                    e.preventDefault()
-                    const pluginFiles = window.electron.openInstallFile()
-                    if (pluginFiles) {
-                        console.log(pluginFiles)
-                        const installed = await plugins.install(pluginFiles)
-                        console.log('Installed plugin:', installed)
-                    }
+                    <Button type="primary" onClick={
+                        async () => {
 
-                }}>Install</button>
+                            const pluginFiles = window.electron.openInstallFile()
+                            if (pluginFiles) {
+                                console.log(pluginFiles)
+                                const installed = await plugins.install(pluginFiles)
+                                console.log('Installed plugin:', installed);
 
-            <button onClick={async (e) => {
-                e.preventDefault();
-                const active = await plugins.getActive()
-                plugins.update(active.map(plg => plg.name))
-                console.log('Plugins updated');
+                                await setupPE();
+
+                                window.electron.getPluginsList().then((items: any) => {
+                                    setPlugins(items);
+                                })
+
+                            }
+
+                        }}>{i18n.t('Install')}</Button>
+
+                    <Button onClick={async () => {
+                        if (extensionPoints.get('app')) extensionPoints.execute('app', window.electron)
+
+                        // if (extensionPoints.get('app-serial')) extensionPoints.executeSerial('app-serial', window.electron)
+                        setDisplay(false);
+                    }}>{i18n.t('run')}</Button>
+                </Space>
+            </ConfigProvider>
 
 
-            }}>
-                updated
-            </button>
-
-            <button onClick={async(e) => {
-                e.preventDefault();
-                await activationPoints.trigger('init');
-                extensionPoints.execute('extend-menu', 'newItem')
-            }}>run</button>
-
-<button onClick={(e)=>{
-    e.preventDefault();
-  
-}}>f</button>
+            {display &&
+                Array.from(pluginItems, (item: any, index: number) => pluginCard(item.name, item.url, index))
+                // JSON.stringify(pluginItems, null, 2)
+            }
 
         </div>
     );

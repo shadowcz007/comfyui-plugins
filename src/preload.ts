@@ -3,15 +3,25 @@ import { contextBridge, ipcRenderer, clipboard, IpcRendererEvent, nativeImage, w
 const remote = require("@electron/remote")
 
 const useFacade = require("pluggable-electron/facade")
-useFacade()
+useFacade();
 
+
+
+
+const isDebug = !!(process?.env.npm_lifecycle_script?.match("--DEV"));
 
 export type Channels = 'ipc-plugins';
 
 
-// const currentWindow = remote.getCurrentWindow();
-// console.log(remote.BrowserWindow.getFocusedWindow())
-
+let win = remote.getCurrentWindow();
+window.addEventListener("mousemove", (event: any) => {
+    console.log(event?.target.nodeName)
+    if (!['HTML','DIV'].includes(event.target.nodeName)) {
+        win.setIgnoreMouseEvents(false);
+    } else {
+        win.setIgnoreMouseEvents(true, { forward: true });
+    }
+})
 
 const electronHandler = {
     ipcRenderer: {
@@ -33,6 +43,11 @@ const electronHandler = {
             ipcRenderer.once(channel, (_event, ...args) => func(...args));
         },
     },
+    getPluginsList: () => ipcRenderer.invoke('main:handle', { cmd: 'plugins-list' }),
+    plugins:()=>{
+       
+        return  require('pluggable-electron/renderer')
+    },
     getCurrentWindow: () => remote.BrowserWindow.getFocusedWindow(),
     openInstallFile: () => {
         let w: any = remote.BrowserWindow.getFocusedWindow();
@@ -45,7 +60,9 @@ const electronHandler = {
             ]
         }) || '';
         return filepath
-    }
+    },
+    isDebug,
+    platform:process.platform
 };
 
 contextBridge.exposeInMainWorld('electron', electronHandler);

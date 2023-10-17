@@ -1,32 +1,55 @@
-const { app, BrowserWindow, dialog, globalShortcut } = require('electron')
+const { app, BrowserWindow, dialog,screen, globalShortcut } = require('electron')
 const path = require('path')
 const pe = require('pluggable-electron/main')
 
 import ipc from './main/ipc'
 import i18n from "i18next";
 import { mainInit } from './i18n/config'
-
+const isDebug = !!(process?.env.npm_lifecycle_script?.match("--DEV"));
 
 function createWindow() {
-
+  const vw = screen.getPrimaryDisplay().workAreaSize.width;
+  const vh = screen.getPrimaryDisplay().workAreaSize.height;
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 1000,
-    height: 800,
+    x: 0, y: 0,
+    width: vw,
+    height: vh,
+    type: 'toolbar',  //创建的窗口类型为工具栏窗口
+    frame: false,  //要创建无边框窗口
+    resizable: false,
+    show: true,
+    transparent: true,
+    hasShadow: false,
+    alwaysOnTop: true,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      // contextIsolation: false
+      preload: path.resolve(__dirname, "preload.js"),
+      sandbox: false,
+      // navigateOnDragDrop: true, //支持直接拖文件进来
+      autoplayPolicy: 'user-gesture-required',
+      spellcheck: false
     }
+    
   })
 
   require('@electron/remote/main').initialize()
-  require("@electron/remote/main").enable(mainWindow.webContents)
+  require("@electron/remote/main").enable(mainWindow.webContents);
+
+  // ipc监听
+  ipc.init(pe);
 
   // and load the index.html of the app.
-  mainWindow.loadFile('dist/home.html')
-  console.log(app.isPackaged)
+  mainWindow.loadFile('dist/home.html');
+  mainWindow.setIgnoreMouseEvents(true, { forward: true });
+
   // Open the DevTools.
-  if (!app.isPackaged) mainWindow.webContents.openDevTools()
+  if (isDebug) setTimeout(() => mainWindow.webContents.openDevTools({mode:'detach' }), 2000)
+
+
+  // 通过注册快捷键，调开web的开发者模式。 方便调试
+  if (isDebug) globalShortcut.register('CommandOrControl+Shift+L', () => {
+    mainWindow?.webContents.toggleDevTools()
+  })
 
 }
 
@@ -59,14 +82,7 @@ app.whenReady().then(() => {
   });
 
 
-  ipc.init();
 
-
-  // 通过注册快捷键，调开web的开发者模式。 方便调试
-  if (!app.isPackaged) globalShortcut.register('CommandOrControl+Shift+L', () => {
-    let focusWin = BrowserWindow.getFocusedWindow()
-    focusWin?.webContents.toggleDevTools()
-  })
 
 })
 
