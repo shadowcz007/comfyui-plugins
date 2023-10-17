@@ -1,5 +1,4 @@
 export function init (extensionPoints) {
-  
   // varFromExtensionPoint 从app传来的变量
   const yourCustomExtension = (varFromExtensionPoint) => {
     console.log('yourCustomExtension',varFromExtensionPoint)
