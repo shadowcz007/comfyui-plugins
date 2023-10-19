@@ -16,7 +16,7 @@ export type Channels = 'ipc-plugins';
 let win = remote.getCurrentWindow();
 window.addEventListener("mousemove", (event: any) => {
     console.log(event?.target.nodeName)
-    if (!['HTML','DIV'].includes(event.target.nodeName)) {
+    if (!['HTML', 'DIV'].includes(event.target.nodeName)) {
         win.setIgnoreMouseEvents(false);
     } else {
         win.setIgnoreMouseEvents(true, { forward: true });
@@ -42,11 +42,14 @@ const electronHandler = {
         once(channel: Channels, func: (...args: unknown[]) => void) {
             ipcRenderer.once(channel, (_event, ...args) => func(...args));
         },
+        invoke(channel: Channels, args: unknown[]) {
+            return ipcRenderer.invoke(channel, args);
+        },
     },
     getPluginsList: () => ipcRenderer.invoke('main:handle', { cmd: 'plugins-list' }),
-    plugins:()=>{
-       
-        return  require('pluggable-electron/renderer')
+    plugins: () => {
+
+        return require('pluggable-electron/renderer')
     },
     getCurrentWindow: () => remote.BrowserWindow.getFocusedWindow(),
     openInstallFile: () => {
@@ -62,7 +65,10 @@ const electronHandler = {
         return filepath
     },
     isDebug,
-    platform:process.platform
+    platform: process.platform,
+    executeJavaScript: (code: string) => {
+        return ipcRenderer.invoke('main:handle', { cmd: "executeJavaScript", data: { code: code } })
+    }
 };
 
 contextBridge.exposeInMainWorld('electron', electronHandler);

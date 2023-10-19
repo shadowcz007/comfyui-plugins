@@ -6,7 +6,7 @@ import { Button, ConfigProvider, Space, Avatar, Card } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 
 
-import '@google/model-viewer/dist/model-viewer';
+// import '@google/model-viewer/dist/model-viewer';
 
 
 const { Meta } = Card;
@@ -216,7 +216,7 @@ export const App = () => {
                 // JSON.stringify(pluginItems, null, 2)
             }
 
-            <model-viewer
+            {/* <model-viewer
                 style={{
                     width: 200,
                     height: 200
@@ -227,7 +227,7 @@ export const App = () => {
 
                 alt="A 3D model of a sphere"
                 src="https://modelviewer.dev/shared-assets/models/reflective-sphere.gltf">
-            </model-viewer>
+            </model-viewer> */}
 
         </div>
     );
