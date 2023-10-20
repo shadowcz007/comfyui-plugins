@@ -156,6 +156,8 @@ export const App = () => {
 
     const [images, setImages] = React.useState([]);
 
+    const [promptIds, setPromptIds] = React.useState({});
+
     useEffect(() => {
         window.electron.getPluginsList().then((items: any) => {
             setPlugins(items);
@@ -173,9 +175,10 @@ export const App = () => {
                 let images = data.output?.image_paths || [];
                 setImages(images)
             }
-            if(event==='execution_start'){
+            if (event === 'execution_start') {
                 // prompt_id
-                
+                let prompt_id = data.prompt_id;
+                console.log('#execution_start', prompt_id)
             }
         })
         return () => {
@@ -239,10 +242,27 @@ export const App = () => {
                     // if (extensionPoints.get('app-serial')) extensionPoints.executeSerial('app-serial', window.electron)
                     setDisplay(false);
                 }}>{i18n.t('run')}</Button>
+
+                <Button onClick={async () => {
+                    const res = await window.electron.comfyApi('getQueue');
+                    setStatus(res)
+                }}>{i18n.t('getQueue')}</Button>
+
+
+                <Button onClick={async () => {
+                    const res = await window.electron.comfyApi('getSystemStats');
+                    setStatus(res)
+                }}>{i18n.t('getSystemStats')}</Button>
+
+                <Button onClick={async () => {
+                    const res = await window.electron.comfyApi('getHistory');
+                    setStatus(res)
+                }}>{i18n.t('getHistory')}</Button>
+
             </Space>
 
-            <Space 
-            className="output-images"
+            <Space
+                className="output-images"
             >
                 <Image.PreviewGroup
                     preview={{

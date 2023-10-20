@@ -147,6 +147,10 @@ const electronHandler = {
             return await api.getHistory()
         }else if(cmd=='interrupt'){
             return await api.interrupt()
+        }else if(cmd==='getSystemStats'){
+            return await api.getSystemStats()
+        }else if(cmd=='getQueue'){
+            return await api.getQueue()
         }
     },
     server: (isStart: boolean,
