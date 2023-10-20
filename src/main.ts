@@ -5,6 +5,8 @@ const pe = require('pluggable-electron/main')
 import ipc from './main/ipc'
 import i18n from "i18next";
 import { mainInit } from './i18n/config'
+
+
 const isDebug = !!(process?.env.npm_lifecycle_script?.match("--DEV"));
 
 function createWindow() {

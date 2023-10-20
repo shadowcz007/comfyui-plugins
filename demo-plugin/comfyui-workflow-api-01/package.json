@@ -1,0 +1,17 @@
+{
+  "name": "comfyui-workflow-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "author": "shadow",
+  "license": "MIT",
+  "activationPoints": [
+    "init"
+  ],
+  "scripts": {
+    "package": "rimraf comfyui-workflow-api.tgz && npm pack"
+  },
+  "devDependencies": {
+    "rimraf": "^3.0.2"
+  }
+}

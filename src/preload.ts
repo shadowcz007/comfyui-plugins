@@ -5,8 +5,74 @@ const remote = require("@electron/remote")
 const useFacade = require("pluggable-electron/facade")
 useFacade();
 
+import { setup, plugins, extensionPoints, activationPoints } from 'pluggable-electron/renderer'
 
 
+import ComfyApi from './preload/ComfyApi'
+const api: any = new ComfyApi();
+
+const update = (data: any) => window.postMessage({ cmd: 'status:render', data })
+
+// cb 是主应用的回调
+//  extensionPoints 是插件的回调
+const apiInit = () => {
+    api.addEventListener("status", ({ detail }: any) => {
+        console.log(detail);
+        update({ event: 'status', data: detail })
+    });
+
+    api.addEventListener("reconnecting", () => {
+        console.log("Reconnecting...");
+        update({ event: 'reconnecting' })
+    });
+
+    api.addEventListener("reconnected", () => {
+        console.log('reconnected');
+        update({ event: 'reconnected' })
+    });
+
+    api.addEventListener("progress", ({ detail }: any) => {
+        console.log(detail);
+        update({ event: 'progress', data: detail })
+        if (extensionPoints.get('app')) extensionPoints.execute('app', { event: "progress", data: detail })
+    });
+
+    api.addEventListener("executing", ({ detail, msg }: any) => {
+        // console.log('executing',msg)
+        update({ event: 'executing', data: { ...detail, ...msg } })
+    });
+
+    api.addEventListener("executed", ({ detail }: any) => {
+        console.log("executed", detail);
+        if (extensionPoints.get('app')) extensionPoints.execute('app', { event: "executed", data: detail })
+
+        update({ event: 'executed', data: detail })
+
+    });
+
+    api.addEventListener("execution_start", ({ detail }: any) => {
+        console.log("execution_start", detail);
+        if (extensionPoints.get('app')) extensionPoints.execute('app', { event: "execution_start", data: detail })
+
+        update({ event: 'execution_start', data: detail })
+
+    });
+
+    api.addEventListener("execution_error", ({ detail }: any) => {
+        console.log("execution_error", detail);
+
+        update({ event: 'execution_error', data: detail })
+
+    });
+
+    api.addEventListener("b_preview", ({ detail }: any) => {
+        console.log("b_preview", detail);
+
+        update({ event: 'b_preview', data: detail })
+    });
+
+    api.init();
+}
 
 const isDebug = !!(process?.env.npm_lifecycle_script?.match("--DEV"));
 
@@ -68,7 +134,26 @@ const electronHandler = {
     platform: process.platform,
     executeJavaScript: (code: string) => {
         return ipcRenderer.invoke('main:handle', { cmd: "executeJavaScript", data: { code: code } })
-    }
+    },
+    comfyApi: async (cmd: string, data: any) => {
+        if (cmd === 'init') {
+            apiInit();
+        } else if (cmd === 'queuePrompt') {
+            const { output, workflow } = data;
+            api.queuePrompt(0, { output, workflow })
+        } else if (cmd == 'getNodeDefs') {
+            return await api.getNodeDefs()
+        }else if(cmd=='getHistory'){
+            return await api.getHistory()
+        }else if(cmd=='interrupt'){
+            return await api.interrupt()
+        }
+    },
+    server: (isStart: boolean,
+        port: number,
+        path: string,
+        html: string
+    ) => ipcRenderer.invoke('main:handle', { cmd: "server", data: { isStart, port, path, html } })
 };
 
 contextBridge.exposeInMainWorld('electron', electronHandler);

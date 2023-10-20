@@ -11,3 +11,10 @@ body {
     bottom:12px;
     right: 12px;
 }
+
+.output-images{
+    display: flex;
+    width: 80%;
+    flex-wrap: wrap;
+    margin-left: 10%;
+}

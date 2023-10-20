@@ -1,7 +1,7 @@
 {
   "include": [
     "src/**/*"
-  ],
+, "src/preload.ts"  ],
   "exclude": [
     "node_modules",
     "**/*.spec.ts"

@@ -9,15 +9,9 @@
     "init"
   ],
   "scripts": {
-    "build": "webpack --config webpack.config.js",
     "package": "rimraf demo-plugin.tgz && npm pack"
   },
   "devDependencies": {
-    "rimraf": "^3.0.2",
-    "webpack": "^5.89.0",
-    "webpack-cli": "^5.1.4"
-  },
-  "dependencies": {
-    "@google/model-viewer": "^3.3.0"
+    "rimraf": "^3.0.2"
   }
 }

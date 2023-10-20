@@ -2,7 +2,7 @@
 import { createRoot } from "react-dom/client";
 import React from "react";
 import { useEffect } from "react";
-import { Button, ConfigProvider, Space, Avatar, Card } from 'antd';
+import { Button, ConfigProvider, Space, Avatar, Card, Image } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 
 
@@ -152,9 +152,31 @@ export const App = () => {
     const [pluginItems, setPlugins] = React.useState([]);
     const [display, setDisplay] = React.useState(true);
 
+    const [status, setStatus] = React.useState({});
+
+    const [images, setImages] = React.useState([]);
+
     useEffect(() => {
         window.electron.getPluginsList().then((items: any) => {
             setPlugins(items);
+            window.electron.comfyApi('init')
+        });
+        window.addEventListener('message', (res: any) => {
+            console.log(res.data.data)
+            const { event, data } = res.data.data;
+            setStatus({
+                data,
+                event
+            })
+            if (event == 'executed') {
+                // setImages
+                let images = data.output?.image_paths || [];
+                setImages(images)
+            }
+            if(event==='execution_start'){
+                // prompt_id
+                
+            }
         })
         return () => {
             // if (backFn) {
@@ -164,72 +186,83 @@ export const App = () => {
     }, []);
 
     return (
-        <div>
-            <ConfigProvider
-                theme={{
-                    token: {
-                        // Seed Token，影响范围大
-                        colorPrimary: '#00b96b',
-                        borderRadius: 2,
+        <ConfigProvider
+            theme={{
+                token: {
+                    // Seed Token，影响范围大
+                    colorPrimary: '#00b96b',
+                    borderRadius: 2,
 
-                        // 派生变量，影响范围小
-                        colorBgContainer: '#f6ffed',
-                    },
-                }}
+                    // 派生变量，影响范围小
+                    colorBgContainer: '#f6ffed',
+                },
+            }}
+        >
+            <Space
+                className="menu-btns"
             >
-                <Space
-                    className="menu-btns"
-                >
-                    {/* <h2  >{i18n.t('Manage plugin lifecycle')}</h2> */}
+                {/* <h2  >{i18n.t('Manage plugin lifecycle')}</h2> */}
+                {status && <p
+                    style={{ color: 'white', background: 'gray' }}
+                >{JSON.stringify(status)}</p>}
 
-                    <Button type="primary" onClick={
-                        async () => {
+                <Button type="primary" onClick={
+                    async () => {
 
-                            const pluginFiles = window.electron.openInstallFile()
-                            if (pluginFiles) {
-                                console.log(pluginFiles)
-                                const installed = await plugins.install(pluginFiles)
-                                console.log('Installed plugin:', installed);
+                        const pluginFiles = window.electron.openInstallFile()
+                        if (pluginFiles) {
+                            console.log(pluginFiles)
+                            const installed = await plugins.install(pluginFiles)
+                            console.log('Installed plugin:', installed);
 
-                                await setupPE();
+                            await setupPE();
 
-                                window.electron.getPluginsList().then((items: any) => {
-                                    setPlugins(items);
-                                })
+                            window.electron.getPluginsList().then((items: any) => {
+                                setPlugins(items);
+                            })
 
+                        }
+
+                    }}>{i18n.t('Install')}</Button>
+
+                <Button onClick={async () => {
+                    if (extensionPoints.get('app')) extensionPoints.execute('app', {
+                        event: 'run',
+                        data: {
+                            executeWorkflow: (prompt: any) => {
+                                console.log(prompt)
+                                if (prompt) window.electron.comfyApi('queuePrompt', { output: prompt })
                             }
+                        }
+                    })
 
-                        }}>{i18n.t('Install')}</Button>
+                    // if (extensionPoints.get('app-serial')) extensionPoints.executeSerial('app-serial', window.electron)
+                    setDisplay(false);
+                }}>{i18n.t('run')}</Button>
+            </Space>
 
-                    <Button onClick={async () => {
-                        if (extensionPoints.get('app')) extensionPoints.execute('app', window.electron)
+            <Space 
+            className="output-images"
+            >
+                <Image.PreviewGroup
+                    preview={{
+                        onChange: (current, prev) => console.log(`current index: ${current}, prev index: ${prev}`),
+                    }}
+                >
+                    {
+                        Array.from(images, (imgurl: string) => <Image width={200} src={imgurl} />)
+                    }
 
-                        // if (extensionPoints.get('app-serial')) extensionPoints.executeSerial('app-serial', window.electron)
-                        setDisplay(false);
-                    }}>{i18n.t('run')}</Button>
-                </Space>
-            </ConfigProvider>
-
+                </Image.PreviewGroup>
+            </Space>
 
             {display &&
                 Array.from(pluginItems, (item: any, index: number) => pluginCard(item.name, item.url, index))
                 // JSON.stringify(pluginItems, null, 2)
             }
 
-            {/* <model-viewer
-                style={{
-                    width: 200,
-                    height: 200
-                }}
-                // camera-controls
-                // disable-zoom
-                // touch-action="pan-y" 
+        </ConfigProvider>
 
-                alt="A 3D model of a sphere"
-                src="https://modelviewer.dev/shared-assets/models/reflective-sphere.gltf">
-            </model-viewer> */}
-
-        </div>
     );
 };
 
