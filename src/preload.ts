@@ -140,11 +140,12 @@ const electronHandler = {
             apiInit();
         } else if (cmd === 'queuePrompt') {
             const { output, workflow } = data;
-            api.queuePrompt(0, { output, workflow })
+            return api.queuePrompt(0, { output, workflow })
         } else if (cmd == 'getNodeDefs') {
             return await api.getNodeDefs()
         }else if(cmd=='getHistory'){
-            return await api.getHistory()
+            const res=await api.getHistory()
+            return res.History
         }else if(cmd=='interrupt'){
             return await api.interrupt()
         }else if(cmd==='getSystemStats'){

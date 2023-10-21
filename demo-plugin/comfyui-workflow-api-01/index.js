@@ -135,7 +135,10 @@ let workflow={
   }
 }
 
-const _workflowName="贴纸v1.0_124345323"
+const _workflowJson={
+  name:"贴纸v1.0",
+  id:'232ri9203ir092i3r'
+}
 
 
 export function init (extensionPoints) {
@@ -165,13 +168,13 @@ export function init (extensionPoints) {
     switch (event) {
       case 'run':
         const {executeWorkflow}=data;
-        executeWorkflow(workflow);
+        executeWorkflow(_workflowJson,workflow);
         return;
       case 'executed':
 
         return
       case 'execution_start':
-        
+
         return
       case 'progress':
         

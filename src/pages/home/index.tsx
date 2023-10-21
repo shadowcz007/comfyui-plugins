@@ -229,12 +229,26 @@ export const App = () => {
                     }}>{i18n.t('Install')}</Button>
 
                 <Button onClick={async () => {
+                    setDisplay(true);
+                }}>{i18n.t('查看插件')}</Button>
+
+                <Button onClick={async () => {
                     if (extensionPoints.get('app')) extensionPoints.execute('app', {
                         event: 'run',
                         data: {
-                            executeWorkflow: (prompt: any) => {
-                                console.log(prompt)
-                                if (prompt) window.electron.comfyApi('queuePrompt', { output: prompt })
+                            executeWorkflow: async (workflow:any,prompt: any) => {
+
+                                if (prompt) {
+                                    let res = await window.electron.comfyApi('queuePrompt',
+                                        {
+                                            output: prompt,
+                                            workflow: {
+                                                ...(workflow||{})
+                                            }
+                                        })
+                                    setStatus(res)
+                                    console.log(prompt, res)
+                                }
                             }
                         }
                     })
@@ -256,7 +270,8 @@ export const App = () => {
 
                 <Button onClick={async () => {
                     const res = await window.electron.comfyApi('getHistory');
-                    setStatus(res)
+                    // setStatus(res)
+                    console.log(res)
                 }}>{i18n.t('getHistory')}</Button>
 
             </Space>
