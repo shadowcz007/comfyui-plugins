@@ -143,14 +143,29 @@ const electronHandler = {
             return api.queuePrompt(0, { output, workflow })
         } else if (cmd == 'getNodeDefs') {
             return await api.getNodeDefs()
-        }else if(cmd=='getHistory'){
-            const res=await api.getHistory()
-            return res.History
-        }else if(cmd=='interrupt'){
+        } else if (cmd == 'getHistory') {
+            const res = await api.getHistory();
+            let items: any = []
+            for (const h of res.History) {
+                // 定义了id和name的插件才允许显示
+                if (h.prompt[3]?.extra_pnginfo?.workflow 
+                    && h.prompt[3]?.extra_pnginfo?.workflow.id 
+                    && h.prompt[3]?.extra_pnginfo?.workflow.name) {
+                    items.push({
+                        ...h,
+                        workflow: {
+                            promptId: h.prompt[1],
+                            ...h.prompt[3].extra_pnginfo.workflow
+                        }
+                    })
+                }
+            }
+            return items
+        } else if (cmd == 'interrupt') {
             return await api.interrupt()
-        }else if(cmd==='getSystemStats'){
+        } else if (cmd === 'getSystemStats') {
             return await api.getSystemStats()
-        }else if(cmd=='getQueue'){
+        } else if (cmd == 'getQueue') {
             return await api.getQueue()
         }
     },
