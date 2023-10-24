@@ -3,6 +3,13 @@
 
 export function init (extensionPoints) {
  
+
+  // varFromExtensionPoint 从app传来的变量
+  const yourCustomExtension = (varFromExtensionPoint) => {
+    console.log('yourCustomExtension',varFromExtensionPoint)
+
+
+    
 // 定义要加载的 URL
 const url = 'https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js';
 const isHas=Array.from(document.querySelectorAll('script'),s=>s.src===url?s.src:null).filter(f=>f)[0]
@@ -42,9 +49,7 @@ const isHas=Array.from(document.querySelectorAll('script'),s=>s.src===url?s.src:
     });
   }
 
-  // varFromExtensionPoint 从app传来的变量
-  const yourCustomExtension = (varFromExtensionPoint) => {
-    console.log('yourCustomExtension',varFromExtensionPoint)
+  
   }
 
 // app 是应用暴露的api集合

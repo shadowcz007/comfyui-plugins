@@ -3,15 +3,15 @@ import { createRoot } from "react-dom/client";
 import React from "react";
 import { useEffect } from "react";
 import { Button, ConfigProvider, Space, Avatar, Card, Image } from 'antd';
-import { CloseOutlined } from '@ant-design/icons';
+import { PlusOutlined } from '@ant-design/icons';
 
 
 // import '@google/model-viewer/dist/model-viewer';
-
-
 const { Meta } = Card;
 
 import { setup, plugins, extensionPoints, activationPoints } from 'pluggable-electron/renderer'
+
+import ItemList from '../../components/ItemList'
 
 import "./index.css";
 
@@ -114,42 +114,13 @@ declare const window: Window &
 //     extensionPoints.execute('display-img', img)
 // })
 
-const pluginCard = (name: string, url: string, key: any) => (
-    <Card
-        size="small"
-        style={{ width: 300 }}
-        key={key}
-        // cover={
-        //     <img
-        //         alt="example"
-        //         src="https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png"
-        //     />
-        // }
-        actions={[
-
-            <CloseOutlined key="edit"
-                onClick={async () => {
-                    const res = await plugins.uninstall([name])
-                    console.log(res ? 'Plugin successfully uninstalled' : 'Plugin could not be uninstalled')
-                }}
-            />,
-
-        ]}
-    >
-        <Meta
-            avatar={<Avatar src="https://xsgames.co/randomusers/avatar.php?g=pixel" />}
-            title={name}
-            description={url}
-        />
-    </Card>
-);
 
 
 
 
 export const App = () => {
 
-    const [pluginItems, setPlugins] = React.useState([]);
+    const [pluginItems, setPlugins]: any = React.useState([]);
     const [display, setDisplay] = React.useState(true);
 
     const [status, setStatus] = React.useState({});
@@ -209,53 +180,14 @@ export const App = () => {
                     style={{ color: 'white', background: 'gray' }}
                 >{JSON.stringify(status)}</p>}
 
-                <Button type="primary" onClick={
-                    async () => {
 
-                        const pluginFiles = window.electron.openInstallFile()
-                        if (pluginFiles) {
-                            console.log(pluginFiles)
-                            const installed = await plugins.install(pluginFiles)
-                            console.log('Installed plugin:', installed);
-
-                            await setupPE();
-
-                            window.electron.getPluginsList().then((items: any) => {
-                                setPlugins(items);
-                            })
-
-                        }
-
-                    }}>{i18n.t('Install')}</Button>
 
                 <Button onClick={async () => {
-                    setDisplay(true);
-                }}>{i18n.t('查看插件')}</Button>
-
-                <Button onClick={async () => {
-                    if (extensionPoints.get('app')) extensionPoints.execute('app', {
-                        event: 'run',
-                        data: {
-                            executeWorkflow: async (workflow:any,prompt: any) => {
-
-                                if (prompt) {
-                                    let res = await window.electron.comfyApi('queuePrompt',
-                                        {
-                                            output: prompt,
-                                            workflow: {
-                                                ...(workflow||{})
-                                            }
-                                        })
-                                    setStatus(res)
-                                    console.log(prompt, res)
-                                }
-                            }
-                        }
+                    window.electron.getPluginsList().then((items: any) => {
+                        setPlugins(items);
+                        setDisplay(true);
                     })
-
-                    // if (extensionPoints.get('app-serial')) extensionPoints.executeSerial('app-serial', window.electron)
-                    setDisplay(false);
-                }}>{i18n.t('run')}</Button>
+                }}>{i18n.t('查看插件')}</Button>
 
                 <Button onClick={async () => {
                     const res = await window.electron.comfyApi('getQueue');
@@ -291,9 +223,92 @@ export const App = () => {
                 </Image.PreviewGroup>
             </Space>
 
-            {display &&
+            {/* {display &&
                 Array.from(pluginItems, (item: any, index: number) => pluginCard(item.name, item.url, index))
                 // JSON.stringify(pluginItems, null, 2)
+            } */}
+            {
+                display && <ItemList
+
+                    items={pluginItems}
+
+                    callback={async (e: any) => {
+                        // console.log(e)
+                        const { cmd, data } = e;
+                        if (cmd === 'remove') {
+                            const { name } = data;
+                            if (name) {
+                                const res = await plugins.uninstall([name])
+                                console.log(res ? 'Plugin successfully uninstalled' : 'Plugin could not be uninstalled')
+                            }
+                        } else if (cmd === 'display') {
+                            const { show } = data;
+                            setDisplay(show);
+
+                            let items = await window.electron.getPluginsList();
+                            console.log(items)
+                        } else if (cmd == 'run') {
+                            const { name } = data;
+                            if (name) {
+
+                                await setupPE();
+
+                                const app = extensionPoints.get('app');
+                                for (const plugin of app._extensions) {
+                                    if (plugin.name != name) {
+                                        extensionPoints.unregisterAll(new RegExp(plugin.name));
+                                    }
+                                }
+
+                                // console.log(app._extensions)
+                                if (extensionPoints.get('app')) extensionPoints.execute('app', {
+                                    event: 'run',
+                                    data: {
+                                        executeWorkflow: async (workflow: any, prompt: any) => {
+
+                                            if (prompt) {
+                                                let res = await window.electron.comfyApi('queuePrompt',
+                                                    {
+                                                        output: prompt,
+                                                        workflow: {
+                                                            ...(workflow || {})
+                                                        }
+                                                    })
+                                                setStatus(res)
+                                                console.log(prompt, res)
+                                            }
+                                        }
+                                    }
+                                })
+
+                                // if (extensionPoints.get('app-serial')) extensionPoints.executeSerial('app-serial', window.electron)
+                            }
+                        }
+
+                    }}
+
+                    actions={
+                        [
+                            <Button onClick={
+                                async () => {
+                                    const pluginFiles = window.electron.openInstallFile()
+                                    if (pluginFiles) {
+                                        console.log(pluginFiles)
+                                        const installed = await plugins.install(pluginFiles)
+                                        console.log('Installed plugin:', installed);
+                                        setStatus(installed)
+                                        // await setupPE();
+                                        window.electron.getPluginsList().then((items: any) => {
+                                            setPlugins(items);
+                                        })
+                                    }
+
+                                }}> <PlusOutlined /> {i18n.t('Install')}</Button>
+
+
+                        ]
+                    }
+                />
             }
 
         </ConfigProvider>
