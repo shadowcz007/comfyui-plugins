@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Avatar, List, Radio, Space, Card } from 'antd';
 
-import { CloseOutlined, DeleteOutlined,PlayCircleOutlined } from '@ant-design/icons';
-
+import { CloseOutlined, DeleteOutlined, PlayCircleOutlined } from '@ant-design/icons';
+import Draggable from 'react-draggable';
 import i18n from "i18next";
 
 
@@ -66,39 +66,48 @@ const pluginCard = (data: any, key: any, callback: any) => (
   </Card>
 );
 
+
+
 const App: any = (props: any) => {
   const { items, callback, actions } = props;
+
   return (
-    <Card
-      title={i18n.t("Workflow Plugin")}
-      bordered={false}
-      style={{ width: 360, position: 'fixed', left: 120, top: '10vh', height: '80vh' }}
-      extra={<CloseOutlined key="edit"
-        onClick={async () => {
-          if (callback) {
-            // console.log(name)
-            callback({
-              cmd: 'display',
-              data: { show: false }
-            })
-          }
+    <Draggable handle="strong" >
+      <Card
+        title={<strong className="cursor">{i18n.t("Workflow Plugin")}</strong>}
+        bordered={false}
+        style={{
+          width: 360,
+          // position: 'fixed', left: 120, top: '10vh', 
+          // height: '80vh' 
         }}
-      />}
+        extra={<CloseOutlined key="edit"
+          onClick={async () => {
+            if (callback) {
+              // console.log(name)
+              callback({
+                cmd: 'display',
+                data: { show: false }
+              })
+            }
+          }}
+        />}
 
-      actions={actions}
+        actions={actions}
 
-    >
-
-      <List
-        pagination={{ position: 'top', align: 'start' }}
-        dataSource={items}
-        renderItem={(item: any, index) => (
-          <List.Item>
-            {pluginCard(item, index, callback)}
-          </List.Item>
-        )}
-      />
-    </Card>
+      >
+        
+        <List
+          pagination={{ position: 'top', align: 'start' }}
+          dataSource={items}
+          renderItem={(item: any, index) => (
+            <List.Item>
+              {pluginCard(item, index, callback)}
+            </List.Item>
+          )}
+        />
+      </Card>
+    </Draggable>
   );
 };
 

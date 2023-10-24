@@ -4,6 +4,7 @@ body {
     /* width: 100vw;
     height: 100vh; */
     width: fit-content;
+    overflow: hidden;
 }
 
 .menu-btns {
@@ -17,4 +18,10 @@ body {
     width: 80%;
     flex-wrap: wrap;
     margin-left: 10%;
+}
+
+.cursor{
+    display: flex;
+    width: 100%;
+    line-height: 48px;
 }

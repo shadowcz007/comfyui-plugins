@@ -5,7 +5,6 @@ import { useEffect } from "react";
 import { Button, ConfigProvider, Space, Avatar, Card, Image } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 
-
 // import '@google/model-viewer/dist/model-viewer';
 const { Meta } = Card;
 
@@ -227,6 +226,7 @@ export const App = () => {
                 Array.from(pluginItems, (item: any, index: number) => pluginCard(item.name, item.url, index))
                 // JSON.stringify(pluginItems, null, 2)
             } */}
+
             {
                 display && <ItemList
 
