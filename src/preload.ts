@@ -167,6 +167,8 @@ const electronHandler = {
             return await api.getSystemStats()
         } else if (cmd == 'getQueue') {
             return await api.getQueue()
+        }  else if(cmd=='getEmbeddings'){
+            return await api.getEmbeddings()
         }
     },
     server: (isStart: boolean,

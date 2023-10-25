@@ -11,7 +11,7 @@ const { Meta } = Card;
 import { setup, plugins, extensionPoints, activationPoints } from 'pluggable-electron/renderer'
 
 import ItemList from '../../components/ItemList'
-import OutputCard from '../../components/outputCard'
+import OutputImages from '../../components/OutputImages'
 import "./index.css";
 
 import i18n from "i18next";
@@ -120,7 +120,10 @@ declare const window: Window &
 export const App = () => {
 
     const [pluginItems, setPlugins]: any = React.useState([]);
-    const [display, setDisplay] = React.useState(true);
+    const [displayWorkflowPlugins, setDisplayWorkflowPlugins] = React.useState(false);
+
+    const [historyItems, setHistoryItems]: any = React.useState([]);
+    const [displayHistory, setDisplayHistory] = React.useState(false);
 
     const [status, setStatus] = React.useState({});
 
@@ -147,6 +150,9 @@ export const App = () => {
         setPlugins(items);
         let plugin = items.filter((item: any) => item.name === name)[0]
         // console.log(plugin)
+
+        // TODO 需要提供一个校对节点是否有效的功能
+
         // name version
         if (extensionPoints.get('app')) extensionPoints.execute('app', {
             event: 'run',
@@ -158,7 +164,9 @@ export const App = () => {
                             {
                                 output: prompt,
                                 workflow: {
-                                    ...(workflow || {})
+                                    ...(workflow || {}),
+                                    name: plugin.name,
+                                    id: plugin.url //取hash
                                 }
                             })
                         setStatus(res)
@@ -185,16 +193,23 @@ export const App = () => {
                 event
             })
             if (event == 'executed') {
-                console.log('executed', data.output)
+                console.log('executed', data)
                 // 区分不同的类型
                 // setImages
                 let images = data.output?.image_paths || [];
-                setImages(images)
+                setImages({data:images,type:'images',name:data.workflow.name});
             }
             if (event === 'execution_start') {
                 // prompt_id
                 let prompt_id = data.prompt_id;
                 console.log('#execution_start', prompt_id)
+            }
+
+            if(event==='close-output'){
+                const {name,type}=data;
+                if(type==='images'){
+                    setImages({})
+                }
             }
         })
         return () => {
@@ -204,6 +219,7 @@ export const App = () => {
         };
     }, []);
 
+    // console.log('images',images)
     return (
         <ConfigProvider
             theme={{
@@ -228,7 +244,7 @@ export const App = () => {
                 <Button onClick={async () => {
                     window.electron.getPluginsList().then((items: any) => {
                         setPlugins(items);
-                        setDisplay(true);
+                        setDisplayWorkflowPlugins(true);
                     })
                 }}>{i18n.t('查看插件')}</Button>
 
@@ -246,51 +262,87 @@ export const App = () => {
                 <Button onClick={async () => {
                     const items = await window.electron.comfyApi('getHistory');
                     // setStatus(res)
-                    console.log(items, plugins)
-                    for (const item of items) {
-                        item.output
-                    }
 
+                    let result = [];
+                    for (const item of items) {
+                        const { name } = item.workflow;
+
+                        // name 需要判断是否是已安装的插件
+                        console.log(pluginItems.filter((p: any) => p.name == name)[0])
+                        if (pluginItems.filter((p: any) => p.name == name)[0]) {
+                            for (const nodeId in item.outputs) {
+                                // 暂时只支持Mixlab的图片输出节点
+                                // TODO 获取comfyui后端的output目录所在,支持output的images读取
+                                if (item.outputs[nodeId].image_paths) result.push({
+                                    type: 'images',
+                                    data: item.outputs[nodeId].image_paths,
+                                    name,
+                                    avatar:item.outputs[nodeId].image_paths[0]
+                                })
+                                if (item.outputs[nodeId].prompts) result.push({
+                                    type: 'prompts',
+                                    data: item.outputs[nodeId].prompts,
+                                    name
+                                })
+                            }
+                        }
+
+
+                    };
+                    setHistoryItems(result);
+                    // console.log(result)
+                    setDisplayHistory(true)
 
                 }}>{i18n.t('getHistory')}</Button>
 
             </Space>
 
-            <Space
-                className="output-images"
-            >
-                {
-                    Array.from(images, (imgurl: string, i: number) => <OutputCard
-                        name={i}
-                        imgurl={imgurl} />)
-                }
-                {/* <Image.PreviewGroup
-                    preview={{
-                        onChange: (current, prev) => console.log(`current index: ${current}, prev index: ${prev}`),
-                    }}
-                >
-                    {
-                        Array.from(images, (imgurl: string) => <Image width={200} src={imgurl} />)
-                    }
+            {images?.data?.length>0&&<OutputImages 
+                        images={images}
+                    />}
 
-                </Image.PreviewGroup> */}
-            </Space>
-
-            {/* {display &&
-                Array.from(pluginItems, (item: any, index: number) => pluginCard(item.name, item.url, index))
-                // JSON.stringify(pluginItems, null, 2)
-            } */}
-
-
+        
             {/* 做一个历史记录的列表 */}
+            {displayHistory &&
+                <ItemList
+                    name="History"
+                    items={historyItems}
+                    callback={async (e: any) => {
+                        // console.log(e)
+                        const { cmd, data } = e;
+                        if (cmd === 'display') {
+                            const { show } = data;
+                            setDisplayHistory(show);
+                        } else if (cmd === 'run') {
+                            // 显示历史记录结果                        
+                            const { type } = data;
+                            // console.log('items',items);
+                            if (type === 'images') {
+                                // 图片结果
+                                setImages(data)
+                            } else if (type === 'prompts') {
+                                // prompts结果
 
+                            }
+                        }else if(cmd=='interrupt'){
+                            
+                            const { type  } = data;
+                            // console.log('items',items);
+                            if (type === 'images') {
+                                // 图片结果
+                                setImages([])
+                            } else if (type === 'prompts') {
+                                // prompts结果
+
+                            }
+                        }
+                    }}
+                />}
 
             {
-                display && <ItemList
-
-                    defaultPosition={{
-                        x: 0, y: 0
-                    }}
+                displayWorkflowPlugins &&
+                <ItemList
+                    name="Workflow Plugins"
 
                     items={pluginItems}
 
@@ -305,15 +357,19 @@ export const App = () => {
                             }
                         } else if (cmd === 'display') {
                             const { show } = data;
-                            setDisplay(show);
+                            setDisplayWorkflowPlugins(show);
 
-                            let items = await window.electron.getPluginsList();
-                            console.log(items)
+                            // let items = await window.electron.getPluginsList();
+                            // console.log(items)
                         } else if (cmd == 'run') {
                             const { name } = data;
                             if (name) {
                                 runPluginByName(name)
                             }
+                        } else if (cmd == 'interrupt') {
+                            const { name } = data;
+                            //TODO  根据workflow来取消
+                            window.electron.comfyApi('interrupt');
                         }
 
                     }}
