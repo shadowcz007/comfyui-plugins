@@ -70,9 +70,29 @@ const pluginCard = (data: any, key: any, callback: any) => (
 
 const App: any = (props: any) => {
   const { items, callback, actions } = props;
+  const _dragRef: any = React.useRef();
+  const defaultPosition = JSON.parse(localStorage.getItem('_workflow_plugin_position') || JSON.stringify({
+    x: 0, y: 0
+  }))
+  const savePosition = (e: any) => {
+    // console.log(_dragRef.current.state)
+    const { x, y } = _dragRef.current.state;
+    localStorage.setItem('_workflow_plugin_position', JSON.stringify({
+      x, y
+    }))
+  }
 
   return (
-    <Draggable handle="strong" >
+    <Draggable
+      ref={_dragRef}
+      // 初始位置
+      defaultPosition={defaultPosition || { x: 0, y: 0 }}
+
+      handle="strong"
+      onDrag={savePosition}
+      onStop={savePosition}
+
+    >
       <Card
         title={<strong className="cursor">{i18n.t("Workflow Plugin")}</strong>}
         bordered={false}
@@ -96,7 +116,7 @@ const App: any = (props: any) => {
         actions={actions}
 
       >
-        
+
         <List
           pagination={{ position: 'top', align: 'start' }}
           dataSource={items}

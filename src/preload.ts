@@ -81,8 +81,8 @@ export type Channels = 'ipc-plugins';
 
 let win = remote.getCurrentWindow();
 window.addEventListener("mousemove", (event: any) => {
-    console.log(event?.target.nodeName)
-    if (!['HTML'].includes(event.target.nodeName)) {
+    // console.log(event?.target.id,event?.target.className)
+    if (!['HTML'].includes(event.target.nodeName)||event?.target.className==='_plugin_none_') {
         win.setIgnoreMouseEvents(false);
     } else {
         win.setIgnoreMouseEvents(true, { forward: true });

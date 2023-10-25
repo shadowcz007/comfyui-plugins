@@ -11,7 +11,7 @@ const { Meta } = Card;
 import { setup, plugins, extensionPoints, activationPoints } from 'pluggable-electron/renderer'
 
 import ItemList from '../../components/ItemList'
-
+import OutputCard from '../../components/outputCard'
 import "./index.css";
 
 import i18n from "i18next";
@@ -128,6 +128,50 @@ export const App = () => {
 
     const [promptIds, setPromptIds] = React.useState({});
 
+
+    // 运行插件
+    const runPluginByName = async (name: string) => {
+
+        await setupPE();
+
+        const app = extensionPoints.get('app');
+        for (const plugin of app._extensions) {
+            if (plugin.name != name) {
+                extensionPoints.unregisterAll(new RegExp(plugin.name));
+            }
+        }
+
+        // console.log(app._extensions)
+
+        let items = await window.electron.getPluginsList();
+        setPlugins(items);
+        let plugin = items.filter((item: any) => item.name === name)[0]
+        // console.log(plugin)
+        // name version
+        if (extensionPoints.get('app')) extensionPoints.execute('app', {
+            event: 'run',
+            data: {
+                executeWorkflow: async (workflow: any, prompt: any) => {
+
+                    if (prompt) {
+                        let res = await window.electron.comfyApi('queuePrompt',
+                            {
+                                output: prompt,
+                                workflow: {
+                                    ...(workflow || {})
+                                }
+                            })
+                        setStatus(res)
+                        console.log(prompt, res)
+                    }
+                }
+            }
+        })
+
+        // if (extensionPoints.get('app-serial')) extensionPoints.executeSerial('app-serial', window.electron)
+
+    }
+
     useEffect(() => {
         window.electron.getPluginsList().then((items: any) => {
             setPlugins(items);
@@ -141,6 +185,8 @@ export const App = () => {
                 event
             })
             if (event == 'executed') {
+                console.log('executed', data.output)
+                // 区分不同的类型
                 // setImages
                 let images = data.output?.image_paths || [];
                 setImages(images)
@@ -179,8 +225,6 @@ export const App = () => {
                     style={{ color: 'white', background: 'gray' }}
                 >{JSON.stringify(status)}</p>}
 
-
-
                 <Button onClick={async () => {
                     window.electron.getPluginsList().then((items: any) => {
                         setPlugins(items);
@@ -200,9 +244,14 @@ export const App = () => {
                 }}>{i18n.t('getSystemStats')}</Button>
 
                 <Button onClick={async () => {
-                    const res = await window.electron.comfyApi('getHistory');
+                    const items = await window.electron.comfyApi('getHistory');
                     // setStatus(res)
-                    console.log(res)
+                    console.log(items, plugins)
+                    for (const item of items) {
+                        item.output
+                    }
+
+
                 }}>{i18n.t('getHistory')}</Button>
 
             </Space>
@@ -210,7 +259,12 @@ export const App = () => {
             <Space
                 className="output-images"
             >
-                <Image.PreviewGroup
+                {
+                    Array.from(images, (imgurl: string, i: number) => <OutputCard
+                        name={i}
+                        imgurl={imgurl} />)
+                }
+                {/* <Image.PreviewGroup
                     preview={{
                         onChange: (current, prev) => console.log(`current index: ${current}, prev index: ${prev}`),
                     }}
@@ -219,7 +273,7 @@ export const App = () => {
                         Array.from(images, (imgurl: string) => <Image width={200} src={imgurl} />)
                     }
 
-                </Image.PreviewGroup>
+                </Image.PreviewGroup> */}
             </Space>
 
             {/* {display &&
@@ -227,8 +281,16 @@ export const App = () => {
                 // JSON.stringify(pluginItems, null, 2)
             } */}
 
+
+            {/* 做一个历史记录的列表 */}
+
+
             {
                 display && <ItemList
+
+                    defaultPosition={{
+                        x: 0, y: 0
+                    }}
 
                     items={pluginItems}
 
@@ -250,38 +312,7 @@ export const App = () => {
                         } else if (cmd == 'run') {
                             const { name } = data;
                             if (name) {
-
-                                await setupPE();
-
-                                const app = extensionPoints.get('app');
-                                for (const plugin of app._extensions) {
-                                    if (plugin.name != name) {
-                                        extensionPoints.unregisterAll(new RegExp(plugin.name));
-                                    }
-                                }
-
-                                // console.log(app._extensions)
-                                if (extensionPoints.get('app')) extensionPoints.execute('app', {
-                                    event: 'run',
-                                    data: {
-                                        executeWorkflow: async (workflow: any, prompt: any) => {
-
-                                            if (prompt) {
-                                                let res = await window.electron.comfyApi('queuePrompt',
-                                                    {
-                                                        output: prompt,
-                                                        workflow: {
-                                                            ...(workflow || {})
-                                                        }
-                                                    })
-                                                setStatus(res)
-                                                console.log(prompt, res)
-                                            }
-                                        }
-                                    }
-                                })
-
-                                // if (extensionPoints.get('app-serial')) extensionPoints.executeSerial('app-serial', window.electron)
+                                runPluginByName(name)
                             }
                         }
 

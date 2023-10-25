@@ -126,6 +126,7 @@ let workflow={
   },
   "15": {
     "inputs": {
+      "random_sample":"enable",
       "max_count": 9,
       "mutable_prompt": "Swing\nSlide\nClimbing frame\nSandbox\nSee-saw\nMerry-go-round\nJungle gym\nTrampoline\nMonkey bars\nRocking horse\nPlayhouse\nHopscotch\nBalance beam\nSpring rider\nWater play area\nBall pit\nTunnel\nZip line\nBasketball hoop\nBicycle rack\nSpinner\nClimbing wall\nRope ladder\nTetherball\nFlying fox\nSwinging bridge\nSpiral slide\nWater sprinkler\nPedal go-kart\nMiniature golf course",
       "immutable_prompt": "Die-cut sticker, Cute kawaii ``,sticker, visible stitch line, soft smooth lighting, vibrant studio lighting, modular constructivism, physically based rendering, white background, illustration minimalism, vector, pastel colors\n",
