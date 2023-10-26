@@ -12,7 +12,7 @@ const App: any = (props: any) => {
   const { name, items, callback, actions } = props;
   const [data,setData]=React.useState(items);
   const [play, setPlay]: any = React.useState({});
-  const [current,setCurrent]=React.useState(1);
+  // const [current,setCurrent]=React.useState(1);
   const _dragRef: any = React.useRef();
   const defaultPosition = JSON.parse(localStorage.getItem(`_workflow_plugin_position_${name}`) || JSON.stringify({
     x: 0, y: 0
@@ -25,7 +25,9 @@ const App: any = (props: any) => {
     }))
   }
 
-  console.log('data',current,data.slice(current*2-2,current*2))
+  // console.log('data',data)
+
+  const pageSize=2;
 
   return (
     <Draggable
@@ -66,18 +68,17 @@ const App: any = (props: any) => {
           pagination={{ 
             position: 'top', 
             align: 'start',
-            current,
-            pageSize:2,
-            onChange:(e:any)=>{
+            // current,
+            pageSize:pageSize,
+            onChange:(page:any)=>{
               // setCurrent(e);
-              setData(items.slice(e*2-2,e*2))
+              setData(items.slice(pageSize*(page-1),pageSize*page))
             } ,
             total:items.length,
             hideOnSinglePage:true
           }}
           dataSource={data}
           renderItem={(item: any, index) => {
-          
             return <List.Item>
               <Item 
               data={item}

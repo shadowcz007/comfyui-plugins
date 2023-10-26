@@ -2,8 +2,9 @@
 import { createRoot } from "react-dom/client";
 import React from "react";
 import { useEffect } from "react";
-import { Button, ConfigProvider, Space, Avatar, Card, Image } from 'antd';
+import { Button, ConfigProvider, Space, Avatar, Card, Image,Progress } from 'antd';
 import { PlusOutlined,DashboardOutlined } from '@ant-design/icons';
+const hash = require('object-hash');
 
 // import '@google/model-viewer/dist/model-viewer';
 const { Meta } = Card;
@@ -127,9 +128,9 @@ export const App = () => {
     const [displayHistory, setDisplayHistory] = React.useState(false);
 
     const [status, setStatus] = React.useState({});
-    const [badge,setBadge]= React.useState(0);
+    const [serverStatus,setServerStatus]= React.useState(0);
 
-    const [images, setImages] = React.useState([]);
+    const [images, setImages] = React.useState({});
 
     const [promptIds, setPromptIds] = React.useState({});
 
@@ -173,6 +174,7 @@ export const App = () => {
                             })
                         setStatus(res)
                         console.log(prompt, res)
+                        // getQueue()
                     }
                 }
             }
@@ -196,35 +198,55 @@ export const App = () => {
 
     const getHistory=async ()=>{
         const items = await window.electron.comfyApi('getHistory');
-                    // setStatus(res)
+        let history=JSON.parse(localStorage.getItem('_plugin_history_')||'[]');
 
-                    let result = [];
+                
                     for (const item of items) {
                         const { name } = item.workflow;
-
+                        
                         // name 需要判断是否是已安装的插件
                         console.log(pluginItems.filter((p: any) => p.name == name)[0])
                         if (pluginItems.filter((p: any) => p.name == name)[0]) {
                             for (const nodeId in item.outputs) {
                                 // 暂时只支持Mixlab的图片输出节点
                                 // TODO 获取comfyui后端的output目录所在,支持output的images读取
-                                if (item.outputs[nodeId].image_paths) result.push({
-                                    type: 'images',
-                                    data: item.outputs[nodeId].image_paths,
-                                    name,
-                                    avatar:item.outputs[nodeId].image_paths[0]
-                                })
-                                if (item.outputs[nodeId].prompts) result.push({
-                                    type: 'prompts',
-                                    data: item.outputs[nodeId].prompts,
-                                    name
-                                })
+                                if (item.outputs[nodeId].image_paths) {
+                                    let d={
+                                        type: 'images',
+                                        data: item.outputs[nodeId].image_paths,
+                                        name,
+                                        avatar:item.outputs[nodeId].image_paths[0]
+                                    }
+                                    let id=hash(d);
+                                    if(!history.filter((h:any)=>h.id==id)[0]){
+                                        history.push({
+                                            ...d,id
+                                        })
+                                    }
+                                    
+                                 }
+                                if (item.outputs[nodeId].prompts) {
+                                    
+                                    let d={
+                                        type: 'prompts',
+                                        data: item.outputs[nodeId].prompts,
+                                        name
+                                    }
+                                    let id=hash(d);
+                                    
+                                    if(!history.filter((h:any)=>h.id==id)[0]){
+                                        history.push({
+                                            ...d,id
+                                        })
+                                    }
+                                }
                             }
                         }
 
-
                     };
-                    setHistoryItems(result);
+
+                    localStorage.setItem('_plugin_history_',JSON.stringify(history))
+                    setHistoryItems(history);
                     // console.log(result)
                     setDisplayHistory(true)
     }
@@ -232,8 +254,8 @@ export const App = () => {
     const getQueue=async ()=>{
         const res = await window.electron.comfyApi('getQueue');
         const {Running,Pending}=res;
-        // setStatus(res)
-        setBadge(Running.length)
+        // console.log(res) 
+        return res
     }
 
     useEffect(() => {
@@ -272,11 +294,18 @@ export const App = () => {
                 // 是否连接了服务器
                 if(data){
                     // 正常
+                    setServerStatus(0)
                 }else{
                     // 服务不可用
-                    
+                    setServerStatus(1)
                 }
             }
+
+            if(event==='progress'){
+
+            }
+
+
         })
         return () => {
             // if (backFn) {
@@ -302,6 +331,7 @@ export const App = () => {
             <Space
                 className="menu-btns"
             >
+                <Progress steps={3} percent={50} />
                 {/* <h2  >{i18n.t('Manage plugin lifecycle')}</h2> */}
                 {status && <p
                     style={{ color: 'white', background: 'gray' }}
@@ -342,7 +372,7 @@ export const App = () => {
                             // console.log('items',items);
                             if (type === 'images') {
                                 // 图片结果
-                                setImages([])
+                                setImages({})
                             } else if (type === 'prompts') {
                                 // prompts结果
 
@@ -416,7 +446,7 @@ export const App = () => {
             openPlugin={openPlugin}
             getHistory={getHistory}
             openSetup={openSetup}
-            badge={badge}
+            serverStatus={serverStatus}
             />
 
         </ConfigProvider>

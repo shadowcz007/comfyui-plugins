@@ -36,13 +36,13 @@ class App extends React.Component {
 
     componentDidUpdate(prevProps: any, prevState: any) {
         // console.log(this.props.data)
-        // if (
-        //     this.props.data !== prevProps.data
-        // ) {
-        //     this.setState({data:this.props.data})
-        //     // this.destroyConnection();
-        //     // this.setupConnection();
-        // }
+        if (
+            this.props.data !== prevProps.data
+        ) {
+            this.setState({data:this.props.data})
+            // this.destroyConnection();
+            // this.setupConnection();
+        }
     }
 
     componentWillUnmount() {

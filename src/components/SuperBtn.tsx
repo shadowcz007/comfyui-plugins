@@ -2,35 +2,75 @@ import { AppstoreAddOutlined,WifiOutlined,FileSearchOutlined,SettingOutlined   }
 import React from 'react';
 import { FloatButton } from 'antd';
 
-const App: React.FC = (props:any) =>{
-    const {
+
+type PropType = {
+    [propName: string]: any;
+}
+
+type StateType = {
+    [stateName: string]: any;
+}
+
+interface App {
+    state: StateType;
+    props: PropType
+}
+
+class App extends React.Component {
+    constructor(props: any) {
+        super(props);
+        this.state = {
+            
+        }
+         
+    }
+
+    componentDidMount() {
+       
+    }
+
+    componentDidUpdate(prevProps: any, prevState: any) {
+    
+    }
+
+    componentWillUnmount() {
+       
+    }
+
+    render() {
+      const {
         openPlugin,
         openSetup,
         getHistory,
-        badge
-    }=props
-    return <>
-    <FloatButton.Group
-      trigger="hover"
-      type="primary"
-      style={{ right: 94 }}
-      icon={<WifiOutlined />}
-      badge={{count: badge }}
-    >
-      <FloatButton icon={<AppstoreAddOutlined />}
-      onClick={openPlugin}
+        serverStatus
+    }=this.props;
+        return (
+          <>
+          <FloatButton.Group
+            trigger="hover"
+            type="primary"
+            style={{ right: 94 }}
+            icon={<WifiOutlined />}
+            badge={{ dot: serverStatus>0 }}
+          >
+            <FloatButton icon={<AppstoreAddOutlined />}
+            onClick={openPlugin}
+            
+            />
+            
+            <FloatButton icon={<FileSearchOutlined />} 
+            onClick={getHistory}
+            />
       
-      />
-      
-      <FloatButton icon={<FileSearchOutlined />} 
-      onClick={getHistory}
-      />
-
-<FloatButton icon={<SettingOutlined />} 
-      onClick={openSetup}/>
-    
-    </FloatButton.Group>
-  </>
-};
+      <FloatButton icon={<SettingOutlined />} 
+            onClick={openSetup}
+            badge={{ dot: serverStatus>0 }}
+            />
+          
+          </FloatButton.Group>
+        </>
+        );
+    }
+}
 
 export default App;
