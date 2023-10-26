@@ -28,6 +28,9 @@ class App extends React.Component {
             play: false
         }
         // console.log(this.props.data)
+        window.addEventListener('message', (res: any) => {
+            console.log('message::status:done',res)
+        })
     }
 
     componentDidMount() {

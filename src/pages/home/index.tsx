@@ -129,6 +129,7 @@ export const App = () => {
 
     const [status, setStatus] = React.useState({});
     const [serverStatus,setServerStatus]= React.useState(0);
+    const [progress,setProgress]=React.useState(101);
 
     const [images, setImages] = React.useState({});
 
@@ -174,7 +175,7 @@ export const App = () => {
                             })
                         setStatus(res)
                         console.log(prompt, res)
-                        // getQueue()
+                        localStorage.setItem('_plugin_current_workflow_name',plugin.name)
                     }
                 }
             }
@@ -271,11 +272,24 @@ export const App = () => {
                 event
             })
             if (event == 'executed') {
-                console.log('executed', data)
+                console.log('executed', data);
+
+                const name=localStorage.getItem('_plugin_current_workflow_name')||'-'
+
                 // 区分不同的类型
                 // setImages
                 let images = data.output?.image_paths || [];
-                setImages({data:images,type:'images',name:data.workflow.name});
+                setImages({data:images,type:'images',name});
+                
+                // 检查是否还在runing
+                getQueue().then(res=>{
+                    const {Running}=res;
+                    if(Running.length===0){
+                       alert('DONE')
+                       window.postMessage({ cmd: 'status:done' })
+                    }
+                })
+                
             }
             if (event === 'execution_start') {
                 // prompt_id
@@ -302,7 +316,8 @@ export const App = () => {
             }
 
             if(event==='progress'){
-
+                const {value,max}=data;
+                setProgress(100*value/max)
             }
 
 
@@ -331,7 +346,7 @@ export const App = () => {
             <Space
                 className="menu-btns"
             >
-                <Progress steps={3} percent={50} />
+                <Progress steps={5} percent={progress} />
                 {/* <h2  >{i18n.t('Manage plugin lifecycle')}</h2> */}
                 {status && <p
                     style={{ color: 'white', background: 'gray' }}

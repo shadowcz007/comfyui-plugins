@@ -156,7 +156,7 @@ export function init (extensionPoints) {
     for(let key in workflow){
       let node=workflow[key];
       // 更新seed
-      if(node.inputs?.seed) node.inputs.seed=node.inputs.seed+1;
+      if(node.inputs?.seed) node.inputs.seed=Math.round(Math.random()*200000000000);
       workflowNew[key]=node;
     }
 
