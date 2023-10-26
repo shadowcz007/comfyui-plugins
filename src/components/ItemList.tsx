@@ -5,14 +5,16 @@ import { CloseOutlined, DeleteOutlined, PlayCircleOutlined, LoadingOutlined } fr
 import Draggable from 'react-draggable';
 import i18n from "i18next";
 
-import Item from './Item'
+import Item from './Item';
 
 
 const App: any = (props: any) => {
-  const { name, items, callback, actions } = props;
-  const [data,setData]=React.useState(items);
-  const [play, setPlay]: any = React.useState({});
-  // const [current,setCurrent]=React.useState(1);
+  const { name, items, callback, actions, pageSize } = props;
+  const [_items, setItems] = React.useState(items);
+  const [data, setData] = React.useState(items.slice(0, pageSize));
+
+  const [current,setCurrent]=React.useState(1);
+
   const _dragRef: any = React.useRef();
   const defaultPosition = JSON.parse(localStorage.getItem(`_workflow_plugin_position_${name}`) || JSON.stringify({
     x: 0, y: 0
@@ -25,9 +27,16 @@ const App: any = (props: any) => {
     }))
   }
 
-  // console.log('data',data)
 
-  const pageSize=2;
+  const _pageSize = pageSize || 2;
+
+
+  React.useEffect(() => {
+    console.log('items', items)
+    setItems(items);
+    setData(items.slice(_pageSize * (current - 1), _pageSize * current))
+  }, [current,items])
+
 
   return (
     <Draggable
@@ -65,24 +74,24 @@ const App: any = (props: any) => {
       >
 
         <List
-          pagination={{ 
-            position: 'top', 
+          pagination={{
+            position: 'top',
             align: 'start',
             // current,
-            pageSize:pageSize,
-            onChange:(page:any)=>{
-              // setCurrent(e);
-              setData(items.slice(pageSize*(page-1),pageSize*page))
-            } ,
-            total:items.length,
-            hideOnSinglePage:true
+            pageSize: _pageSize,
+            onChange: (page: any) => {
+              setCurrent(page);
+              setData(items.slice(_pageSize * (page - 1), _pageSize * page))
+            },
+            total: items.length,
+            hideOnSinglePage: true
           }}
           dataSource={data}
           renderItem={(item: any, index) => {
-            return <List.Item>
-              <Item 
-              data={item}
-              callback={callback}
+            return <List.Item key={index}>
+              <Item
+                data={item}
+                callback={callback}
               />
             </List.Item>
           }}

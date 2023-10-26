@@ -25,11 +25,32 @@ class App extends React.Component {
         super(props);
         this.state = {
             data: this.props.data,
-            play: false
+            play: false,
+            disabled: false
         }
         // console.log(this.props.data)
         window.addEventListener('message', (res: any) => {
-            console.log('message::status:done',res)
+            console.log('message::status:done', res.data)
+            const { cmd, data } = res.data;
+            if (cmd === 'status:done') {
+                if (data.name === this.state.data.name) {
+                    this.setState({
+                        play: false
+                    })
+                }
+            } else if (cmd === 'status:switch') {
+                if (data.id !== this.state.data.id) {
+                    this.setState({
+                        play: false
+                    })
+                }
+            } else if (cmd == 'status:close') {
+                if (data.id === this.state.data.id) {
+                    this.setState({
+                        play: false
+                    })
+                }
+            }
         })
     }
 
@@ -38,13 +59,19 @@ class App extends React.Component {
     }
 
     componentDidUpdate(prevProps: any, prevState: any) {
-        // console.log(this.props.data)
+        // console.log(this.props.data.avatar,this.state.data.avatar)
         if (
-            this.props.data !== prevProps.data
+            this.props.data !== this.state.data || this.props.data.avatar != this.state.data.avatar
         ) {
-            this.setState({data:this.props.data})
+            let json: any = { data: this.props.data, play: false };
+
             // this.destroyConnection();
             // this.setupConnection();
+            if (this.props.data.disabled != undefined) {
+                json.disabled = this.props.data.disabled;
+            }
+
+            this.setState(json)
         }
     }
 
@@ -55,7 +82,7 @@ class App extends React.Component {
     render() {
         const data = this.state.data, play = this.state.play;
         const callback = this.props.callback;
-        // console.log(data)
+        // console.log(data.avatar)
         return (
             <Card
                 size="small"
@@ -97,10 +124,10 @@ class App extends React.Component {
             // ]}
             >
                 <Card.Meta
-                    avatar={<Avatar 
+                    avatar={<Avatar
                         size={98}
-                        src={data.avatar||"https://xsgames.co/randomusers/avatar.php?g=pixel"} 
-                        />}
+                        src={data.avatar || "https://xsgames.co/randomusers/avatar.php?g=pixel"}
+                    />}
                     title={play ? <LoadingOutlined
                         onClick={() => {
                             if (callback) {
@@ -112,6 +139,7 @@ class App extends React.Component {
                             }
                         }}
                     /> : <PlayCircleOutlined key="edit"
+                        disabled={this.state.disabled}
                         onClick={async () => {
                             if (callback) {
                                 // console.log(name)

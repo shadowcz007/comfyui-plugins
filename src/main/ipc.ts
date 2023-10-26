@@ -41,14 +41,20 @@ function traverseDirectory(dir: any) {
 
 
 const getMoreInfo = () => {
-    let info:any={};
-    const data = fs.readFileSync(path.join(pluginsPaths,'plugins.json'), 'utf8');
-    let items=JSON.parse(data);
-   for (const key in items) {
-        const item=JSON.parse(fs.readFileSync(path.join(pluginsPaths,key,'package.json'),'utf8'));
-        info[key]=item;
-   }
-   return info
+    let info: any = {};
+    const data = fs.readFileSync(path.join(pluginsPaths, 'plugins.json'), 'utf8');
+    let items = JSON.parse(data);
+    for (const key in items) {
+        const item = JSON.parse(fs.readFileSync(path.join(pluginsPaths, key, 'package.json'), 'utf8'));
+        info[key] = item;
+        console.log(path.join(pluginsPaths, key, 'avatar.png'),
+            fs.existsSync(path.join(pluginsPaths, key, 'avatar.png')))
+        if (fs.existsSync(path.join(pluginsPaths, key, 'avatar.png'))) {
+            info[key].avatar = path.join(pluginsPaths, key, 'avatar.png');
+        }
+
+    }
+    return info
 }
 
 const init = (plugins: any) => {
@@ -61,15 +67,16 @@ const init = (plugins: any) => {
                 const pluginManager = plugins.getStore();
 
                 const items = pluginManager.getAllPlugins();
-                const info= getMoreInfo()
+                const info = getMoreInfo()
 
                 // console.log(items)
 
-                let itemsNew=[];
+                let itemsNew = [];
                 for (const item of JSON.parse(JSON.stringify(items))) {
-                    if(info[item.name]) itemsNew.push({
+                    if (info[item.name]) itemsNew.push({
                         ...item,
-                        info:info[item.name]
+                        avatar: info[item.name].avatar,
+                        info: info[item.name]
                     })
                 }
                 return itemsNew;

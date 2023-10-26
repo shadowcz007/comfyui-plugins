@@ -9,7 +9,7 @@
     "init"
   ],
   "scripts": {
-    "package": "rimraf demo-plugin.tgz && npm pack"
+    "package": "rimraf model-viewer.tgz && npm pack"
   },
   "devDependencies": {
     "rimraf": "^3.0.2"

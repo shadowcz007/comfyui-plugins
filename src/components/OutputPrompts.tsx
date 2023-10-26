@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Avatar, List, Image, Space, Card } from 'antd';
+import { Avatar, List, Image, Typography, Card } from 'antd';
 
 import { CloseOutlined, DeleteOutlined, PlayCircleOutlined } from '@ant-design/icons';
 import Draggable from 'react-draggable';
 import i18n from "i18next";
 
 
+const { Paragraph } = Typography;
 
 type PropType = {
   [propName: string]: any;
@@ -25,12 +26,11 @@ class App extends React.Component {
   constructor(props: any) {
     super(props);
 
-    const { name, data, title, id } = this.props.data;
+    const { name, title, data,id } = this.props.data;
 
     this.state = {
       name,
-      images: data,
-      title,
+      prompts: data,
       id
     }
 
@@ -42,14 +42,7 @@ class App extends React.Component {
   }
 
   componentDidUpdate(prevProps: any, prevState: any) {
-    if (this.props.data != prevProps.data) {
-      const { name, data, title, id } = this.props.data;
-      this.setState({
-        name,
-        images: data,
-        title, id
-      })
-    }
+
   }
 
   componentWillUnmount() {
@@ -57,27 +50,26 @@ class App extends React.Component {
   }
 
   render() {
-    const { images, name, title, id } = this.state;
+    const { prompts, name, title,id } = this.state;
 
     return (
       <Draggable handle="strong" >
         <Card
-          title={<strong className="cursor">
-            <p>{title}</p>
-            <p>{name} {images.length}</p>
-          </strong>}
+          title={<strong className="cursor">{name} {title}</strong>}
           bordered={false}
           style={{
             width: 480,
             position: 'fixed',
             // left: 120, top: '10vh', 
-            // height: '80vh' 
+            
           }}
           bodyStyle={{
             display: 'flex',
             flexWrap: 'wrap',
             justifyContent: 'center',
-            alignItems: 'center'
+            alignItems: 'center',
+            overflowY:'scroll',
+            height: '60vh' 
           }}
           extra={<CloseOutlined key="edit"
             onClick={async () => {
@@ -86,7 +78,7 @@ class App extends React.Component {
                   event: 'close-output',
                   data: {
                     name,
-                    type: 'images',
+                    type: 'prompts',
                     id
                   }
                 }
@@ -95,24 +87,12 @@ class App extends React.Component {
           />}
         // actions={actions}
         >
-          <Image.PreviewGroup
-            preview={{
-              onChange: (current, prev) => console.log(`current index: ${current}, prev index: ${prev}`),
-            }}
-          >
-            {
-              Array.from(images, (imgurl: string, index: number) =>
-                <Image
-                  key={index}
-                  style={{
-                    display: index > 3 ? 'none' : 'block'
-                  }}
-                  width={200}
-                  src={imgurl} />)
-            }
+          {
+            Array.from(prompts, (prompt: string, index: number) =>
+              <Paragraph copyable={{ tooltips: false }} key={index}>{prompt}</Paragraph>
+            )
+          }
 
-          </Image.PreviewGroup>
-          {/* <Image width={200} src={imgurl} /> */}
         </Card>
 
       </Draggable>
