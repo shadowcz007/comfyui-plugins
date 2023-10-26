@@ -69,7 +69,7 @@ const App: any = (props: any) => {
             current,
             pageSize:2,
             onChange:(e:any)=>{
-              setCurrent(e);
+              // setCurrent(e);
               setData(items.slice(e*2-2,e*2))
             } ,
             total:items.length,

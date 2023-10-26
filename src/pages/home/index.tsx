@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import React from "react";
 import { useEffect } from "react";
 import { Button, ConfigProvider, Space, Avatar, Card, Image } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined,DashboardOutlined } from '@ant-design/icons';
 
 // import '@google/model-viewer/dist/model-viewer';
 const { Meta } = Card;
@@ -12,6 +12,7 @@ import { setup, plugins, extensionPoints, activationPoints } from 'pluggable-ele
 
 import ItemList from '../../components/ItemList'
 import OutputImages from '../../components/OutputImages'
+import SuperBtn from '../../components/SuperBtn'
 import "./index.css";
 
 import i18n from "i18next";
@@ -126,6 +127,7 @@ export const App = () => {
     const [displayHistory, setDisplayHistory] = React.useState(false);
 
     const [status, setStatus] = React.useState({});
+    const [badge,setBadge]= React.useState(0);
 
     const [images, setImages] = React.useState([]);
 
@@ -180,87 +182,20 @@ export const App = () => {
 
     }
 
-    useEffect(() => {
+    const openPlugin=()=>{
         window.electron.getPluginsList().then((items: any) => {
             setPlugins(items);
-            window.electron.comfyApi('init')
-        });
-        window.addEventListener('message', (res: any) => {
-            console.log(res.data.data)
-            const { event, data } = res.data.data;
-            setStatus({
-                data,
-                event
-            })
-            if (event == 'executed') {
-                console.log('executed', data)
-                // 区分不同的类型
-                // setImages
-                let images = data.output?.image_paths || [];
-                setImages({data:images,type:'images',name:data.workflow.name});
-            }
-            if (event === 'execution_start') {
-                // prompt_id
-                let prompt_id = data.prompt_id;
-                console.log('#execution_start', prompt_id)
-            }
-
-            if(event==='close-output'){
-                const {name,type}=data;
-                if(type==='images'){
-                    setImages({})
-                }
-            }
+            setDisplayWorkflowPlugins(true);
         })
-        return () => {
-            // if (backFn) {
-            //   backFn();
-            // }
-        };
-    }, []);
+    }
 
-    // console.log('images',images)
-    return (
-        <ConfigProvider
-            theme={{
-                token: {
-                    // Seed Token，影响范围大
-                    colorPrimary: '#00b96b',
-                    borderRadius: 2,
+    const openSetup=async()=>{
+        const res = await window.electron.comfyApi('getSystemStats');
+        setStatus(res)
+    }
 
-                    // 派生变量，影响范围小
-                    colorBgContainer: '#f6ffed',
-                },
-            }}
-        >
-            <Space
-                className="menu-btns"
-            >
-                {/* <h2  >{i18n.t('Manage plugin lifecycle')}</h2> */}
-                {status && <p
-                    style={{ color: 'white', background: 'gray' }}
-                >{JSON.stringify(status)}</p>}
-
-                <Button onClick={async () => {
-                    window.electron.getPluginsList().then((items: any) => {
-                        setPlugins(items);
-                        setDisplayWorkflowPlugins(true);
-                    })
-                }}>{i18n.t('查看插件')}</Button>
-
-                <Button onClick={async () => {
-                    const res = await window.electron.comfyApi('getQueue');
-                    setStatus(res)
-                }}>{i18n.t('getQueue')}</Button>
-
-
-                <Button onClick={async () => {
-                    const res = await window.electron.comfyApi('getSystemStats');
-                    setStatus(res)
-                }}>{i18n.t('getSystemStats')}</Button>
-
-                <Button onClick={async () => {
-                    const items = await window.electron.comfyApi('getHistory');
+    const getHistory=async ()=>{
+        const items = await window.electron.comfyApi('getHistory');
                     // setStatus(res)
 
                     let result = [];
@@ -292,8 +227,85 @@ export const App = () => {
                     setHistoryItems(result);
                     // console.log(result)
                     setDisplayHistory(true)
+    }
 
-                }}>{i18n.t('getHistory')}</Button>
+    const getQueue=async ()=>{
+        const res = await window.electron.comfyApi('getQueue');
+        const {Running,Pending}=res;
+        // setStatus(res)
+        setBadge(Running.length)
+    }
+
+    useEffect(() => {
+        window.electron.getPluginsList().then((items: any) => {
+            setPlugins(items);
+            window.electron.comfyApi('init')
+        });
+        window.addEventListener('message', (res: any) => {
+            console.log('message',res.data.data)
+            const { event, data } = res.data.data;
+            setStatus({
+                data,
+                event
+            })
+            if (event == 'executed') {
+                console.log('executed', data)
+                // 区分不同的类型
+                // setImages
+                let images = data.output?.image_paths || [];
+                setImages({data:images,type:'images',name:data.workflow.name});
+            }
+            if (event === 'execution_start') {
+                // prompt_id
+                let prompt_id = data.prompt_id;
+                console.log('#execution_start', prompt_id)
+            }
+
+            if(event==='close-output'){
+                const {name,type}=data;
+                if(type==='images'){
+                    setImages({})
+                }
+            }
+
+            if(event==='status'){
+                // 是否连接了服务器
+                if(data){
+                    // 正常
+                }else{
+                    // 服务不可用
+                    
+                }
+            }
+        })
+        return () => {
+            // if (backFn) {
+            //   backFn();
+            // }
+        };
+    }, []);
+
+    // console.log('images',images)
+    return (
+        <ConfigProvider
+            theme={{
+                token: {
+                    // Seed Token，影响范围大
+                    colorPrimary: '#00b96b',
+                    borderRadius: 2,
+
+                    // 派生变量，影响范围小
+                    colorBgContainer: '#f6ffed',
+                },
+            }}
+        >
+            <Space
+                className="menu-btns"
+            >
+                {/* <h2  >{i18n.t('Manage plugin lifecycle')}</h2> */}
+                {status && <p
+                    style={{ color: 'white', background: 'gray' }}
+                >{JSON.stringify(status)}</p>}
 
             </Space>
 
@@ -338,6 +350,7 @@ export const App = () => {
                         }
                     }}
                 />}
+
 
             {
                 displayWorkflowPlugins &&
@@ -390,13 +403,21 @@ export const App = () => {
                                         })
                                     }
 
-                                }}> <PlusOutlined /> {i18n.t('Install')}</Button>
-
-
+                                }}> <PlusOutlined /> {i18n.t('Install')}</Button>,
+                                <Button onClick={getQueue}> <DashboardOutlined /> {i18n.t('getQueue')}</Button>
+                                    
+                                
                         ]
                     }
                 />
             }
+
+            <SuperBtn 
+            openPlugin={openPlugin}
+            getHistory={getHistory}
+            openSetup={openSetup}
+            badge={badge}
+            />
 
         </ConfigProvider>
 

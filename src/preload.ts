@@ -17,7 +17,7 @@ const update = (data: any) => window.postMessage({ cmd: 'status:render', data })
 //  extensionPoints 是插件的回调
 const apiInit = () => {
     api.addEventListener("status", ({ detail }: any) => {
-        console.log(detail);
+        console.log('status',detail);
         update({ event: 'status', data: detail })
     });
 
