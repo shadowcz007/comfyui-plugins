@@ -14,7 +14,7 @@ import { setup, plugins, extensionPoints, activationPoints } from 'pluggable-ele
 import ItemList from '../../components/ItemList'
 import OutputImages from '../../components/OutputImages'
 import OutputPrompts from '../../components/OutputPrompts'
-
+import Setup from '../../components/Setup'
 import SuperBtn from '../../components/SuperBtn'
 import "./index.css";
 
@@ -56,10 +56,12 @@ export const App = () => {
 
     const [historyItems, setHistoryItems]: any = React.useState([]);
     const [displayHistory, setDisplayHistory] = React.useState(false);
+    const [setup, setSetup] = React.useState(false);
 
     const [status, setStatus] = React.useState({});
     const [serverStatus, setServerStatus] = React.useState(0);
     const [progress, setProgress] = React.useState(101);
+
 
 
     // output
@@ -135,8 +137,8 @@ export const App = () => {
     }
 
     const openSetup = async () => {
-        const res = await window.electron.comfyApi('getSystemStats');
-        setStatus(res)
+
+        setSetup(true)
     }
 
     const getHistory = async () => {
@@ -280,6 +282,8 @@ export const App = () => {
                     setImages({})
                 } else if (type === 'prompts') {
                     setPrompts({});
+                } else if(type==='setup'){
+                    setSetup(false);
                 }
 
                 if (id) {
@@ -333,7 +337,7 @@ export const App = () => {
             <Space
                 className="menu-btns"
             >
-                <Progress steps={5} percent={progress} />
+
                 {/* <h2  >{i18n.t('Manage plugin lifecycle')}</h2> */}
                 {status && <p
                     style={{ color: 'white', background: 'gray' }}
@@ -460,6 +464,8 @@ export const App = () => {
                     }
                 />
             }
+
+            {setup && <Setup />}
 
             <SuperBtn
                 openPlugin={openPlugin}
