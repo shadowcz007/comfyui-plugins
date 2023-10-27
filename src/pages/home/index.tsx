@@ -2,7 +2,7 @@
 import { createRoot } from "react-dom/client";
 import React from "react";
 import { useEffect } from "react";
-import { Button, ConfigProvider, Space, message, Card, Image, Progress } from 'antd';
+import { Button, ConfigProvider, Space, message, Card, Image, Input } from 'antd';
 import { PlusOutlined, DashboardOutlined } from '@ant-design/icons';
 const hash = require('object-hash');
 
@@ -12,6 +12,7 @@ const { Meta } = Card;
 import { setup, plugins, extensionPoints, activationPoints } from 'pluggable-electron/renderer'
 
 import ItemList from '../../components/ItemList'
+import Inputs from '../../components/Inputs'
 import OutputImages from '../../components/OutputImages'
 import OutputPrompts from '../../components/OutputPrompts'
 import Setup from '../../components/Setup'
@@ -63,15 +64,17 @@ export const App = () => {
     const [progress, setProgress] = React.useState(101);
 
 
+    // input
+    const [input, setInput]: any = React.useState([]);
 
     // output
     const [images, setImages]: any = React.useState({});
     const [prompts, setPrompts]: any = React.useState({});
 
 
-    // 运行插件
-    const runPluginByName = async (name: string) => {
 
+    // 获取插件
+    const initPlugin = async (name: string) => {
         await setupPE();
 
         const app = extensionPoints.get('app');
@@ -94,6 +97,27 @@ export const App = () => {
         setPlugins(items)
 
         let plugin = items.filter((item: any) => item.name === name)[0]
+        return plugin
+    }
+
+    // 获取插件的输入
+    const getInput = async (name: string) => {
+        let plugin = await initPlugin(name);
+        if (extensionPoints.get('app')) extensionPoints.execute('app', {
+            event: 'get-input',
+            data: {
+                callback: async (result: any) => {
+                    console.log('#get-input', result)
+                    setInput({ name, data: result });
+                }
+            }
+        })
+    }
+
+    // 运行插件
+    const runPluginByName = async (name: string, inputs: any) => {
+
+        let plugin = await initPlugin(name);
         // console.log(plugin)
 
         // TODO 需要提供一个校对节点是否有效的功能
@@ -102,6 +126,7 @@ export const App = () => {
         if (extensionPoints.get('app')) extensionPoints.execute('app', {
             event: 'run',
             data: {
+                inputs,
                 executeWorkflow: async (prompt: any) => {
 
                     if (prompt) {
@@ -282,7 +307,7 @@ export const App = () => {
                     setImages({})
                 } else if (type === 'prompts') {
                     setPrompts({});
-                } else if(type==='setup'){
+                } else if (type === 'setup') {
                     setSetup(false);
                 }
 
@@ -344,6 +369,10 @@ export const App = () => {
                 >{JSON.stringify(status)}</p>}
 
             </Space>
+
+            {
+                input && <Inputs data={input} run={runPluginByName} />
+            }
 
             {images.data && images.data?.length > 0 && <OutputImages
                 data={images}
@@ -428,7 +457,8 @@ export const App = () => {
                             const { name } = data;
                             if (name) {
 
-                                runPluginByName(name);
+                                // runPluginByName(name);
+                                getInput(name);
 
                             }
                         } else if (cmd == 'interrupt') {
