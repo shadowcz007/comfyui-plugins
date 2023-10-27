@@ -39,6 +39,7 @@ Plugins就是按照这个思路设计的，提供comfyui应用的交互界面。
 - 打包调试功能
 - 交互界面
 
+![-](./doc//2.png)
 
 
 ## workflow plugin 开发
