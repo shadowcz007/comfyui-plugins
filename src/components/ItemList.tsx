@@ -6,7 +6,7 @@ import Draggable from 'react-draggable';
 import i18n from "i18next";
 
 import Item from './Item';
-
+import { savePosition, getPosition,onCardFocus } from './Common'
 
 const App: any = (props: any) => {
   const { name, items, callback, actions, pageSize } = props;
@@ -16,29 +16,28 @@ const App: any = (props: any) => {
   const [current, setCurrent] = React.useState(1);
 
   const _dragRef: any = React.useRef();
-  const defaultPosition = JSON.parse(localStorage.getItem(`_workflow_plugin_position_${name}`) || JSON.stringify({
-    x: 0, y: 0
-  }))
-  const savePosition = (e: any) => {
-    // console.log(_dragRef.current.state)
-    const { x, y } = _dragRef.current.state;
-    localStorage.setItem(`_workflow_plugin_position_${name}`, JSON.stringify({
-      x, y
-    }))
-  }
+
+  const key = `_workflow_plugin_position_${name}`;
+
+  const defaultPosition = getPosition(key);
+
+  const _savePosition = (e: any) => {
+    savePosition(key, e);
+  };
 
   const [serverStatus, setServerStatus] = React.useState(0);
   const [progress, setProgress] = React.useState(101);
-
 
   const _pageSize = pageSize || 2;
 
   React.useEffect(() => {
     console.log('items', items)
     setItems(items);
-    setData(items.slice(_pageSize * (current - 1), _pageSize * current))
+    setData(items.slice(_pageSize * (current - 1), _pageSize * current));
 
-    if (name == 'Workflow Plugins') {
+    onCardFocus(key)
+
+    if (name == 'Workflow_Plugins') {
       window.addEventListener('message', (res: any) => {
         const { event, data } = res.data?.data;
 
@@ -79,9 +78,10 @@ const App: any = (props: any) => {
       defaultPosition={defaultPosition || { x: 0, y: 0 }}
 
       handle="strong"
-      onDrag={savePosition}
-      onStop={savePosition}
-
+      onDrag={_savePosition}
+      onStop={_savePosition}
+      defaultClassName={`react-draggable ${key}`}
+      onMouseDown={()=>onCardFocus(key)}
     >
       <Card
         title={<strong className="cursor">{i18n.t(name)}</strong>}

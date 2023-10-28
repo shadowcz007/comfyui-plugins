@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Input, List, Image, Button, Space, Typography, Card, Divider } from 'antd';
 
-import { CloseOutlined, DeleteOutlined, PlayCircleOutlined } from '@ant-design/icons';
+import { CloseOutlined, LoadingOutlined, PlayCircleOutlined } from '@ant-design/icons';
 import Draggable from 'react-draggable';
 import i18n from "i18next";
 
 import InputTag from './InputTag'
+import InputCascader from './InputCascader'
 
+import { savePosition, getPosition, onCardFocus } from './Common'
 
 const { Text } = Typography
 
@@ -23,10 +25,16 @@ interface App {
   props: PropType
 }
 
+declare const window: Window &
+  typeof globalThis & {
+    electron: any,
+  }
+
 
 
 
 class App extends React.Component {
+  _defaultPosition: any;
   constructor(props: any) {
     super(props);
 
@@ -36,22 +44,18 @@ class App extends React.Component {
 
   _init() {
     const name = this.props.data?.name
-    const defaultPosition = JSON.parse(localStorage.getItem(`_${name}_inputs_position`) || JSON.stringify({
-      x: 0, y: 0
-    }))
+    this._defaultPosition = getPosition(`_${name}_inputs_position`)
     return {
       name,
-      defaultPosition,
-      data: this.props.data?.data
+      data: this.props.data?.data,
+      Running: [],
+      Pending: [],
+      isLoading: false
     }
   }
 
   _savePosition(e: any) {
-    const { x, y } = e.target.getBoundingClientRect();
-    localStorage.setItem(`_${this.state.name}_inputs_position`, JSON.stringify({
-      x, y
-    }))
-
+    savePosition(`_${this.state.name}_inputs_position`, e);
   }
 
   _updateData(id: string, value: any) {
@@ -68,6 +72,23 @@ class App extends React.Component {
 
   componentDidMount() {
     // this.setupConnection();
+    onCardFocus(`_${this.state.name}_inputs_position`);
+    window.electron.comfyApi('getQueue').then((res: any) => {
+      const { Running, Pending } = res;
+      this.setState({ Running, Pending })
+    });
+
+    window.addEventListener('message', (res: any) => {
+      const { cmd, data } = res.data;
+      if (cmd === 'status:done') {
+        if (data.name === this.state.name) {
+          this.setState({
+            isLoading: false
+          })
+        }
+      }
+    })
+
   }
 
   componentDidUpdate(prevProps: any, prevState: any) {
@@ -78,19 +99,17 @@ class App extends React.Component {
   }
 
   componentWillUnmount() {
-
   }
-
-
 
   render() {
 
     return (
       <Draggable handle="strong"
-        defaultClassName='inputs_ui'
-        defaultPosition={this.state.defaultPosition || { x: 0, y: 0 }}
+        defaultClassName={`react-draggable _${this.state.name}_inputs_position`}
+        defaultPosition={this._defaultPosition}
         onDrag={(e) => this._savePosition(e)}
         onStop={(e) => this._savePosition(e)}
+        onMouseDown={() => onCardFocus(`_${this.state.name}_inputs_position`)}
       >
         <Card
           title={<strong className="cursor">
@@ -124,13 +143,59 @@ class App extends React.Component {
           />}
         // actions={actions}
         >
+
+          {
+            <>
+              <>{this.state.Running.length}</>
+              <>{this.state.Pending.length}</>
+              <Divider />
+            </>
+          }
+
           {
             this.state.data?.length > 0 && (() => {
               let div = [];
               for (const item of this.state.data) {
+                let cascader: any = "";
+                if (!item.cascader) {
+                  // true
+                  cascader = <InputCascader
+                    onChange={(e: any) => {
+                      console.log(e)
+                      let newItemValue;
+                      Array.from(this.state.data, (d: any) => {
+                        if (d.id === item.id) {
+                          if (typeof (d.value) === 'string') {
+                            d.value += ',' + e.currentTarget.value.join(',')
+                          } else if (Array.isArray(d.value)) {
+                            for (const v of e.currentTarget.value) {
+                              if(!d.value.includes(v)){
+                                d.value.push(v)
+                              }
+                            }
+                            // d.value = [...d.value, ...e.currentTarget.value]
+                          }
+                          newItemValue = d.value;
+                        }
+                        return d
+                      })
+
+                      if (newItemValue) this._updateData(item.id, newItemValue)
+                    }}
+                  />
+                }
+
                 if (item.type === 'string') {
                   div.push(<>
-                    <Text style={{ marginBottom: 12 }}>{item.label}</Text>
+                    <div style={{
+                      display: 'flex',
+                      width: '100%',
+                      justifyContent: 'space-between',
+                      margin: '12px 0'
+                    }}>
+                      <Text style={{ marginBottom: 12 }}>{item.label} </Text>
+                      {cascader}
+                    </div>
                     <Input.TextArea rows={4}
                       value={item.value}
                       className='scrollbar'
@@ -145,7 +210,15 @@ class App extends React.Component {
 
                 if (item.type === 'tag') {
                   div.push(<>
-                    <Text style={{ marginBottom: 12 }}>{item.label}</Text>
+                    <div style={{
+                      display: 'flex',
+                      width: '100%',
+                      justifyContent: 'space-between',
+                      margin: '12px 0'
+                    }}>
+                      <Text style={{ marginBottom: 12 }}>{item.label} </Text>
+                      {cascader}
+                    </div>
                     <InputTag
                       value={item.value}
                       style={{ marginBottom: 12 }}
@@ -157,6 +230,7 @@ class App extends React.Component {
                   </>)
                 }
 
+
               }
               return div
             })()
@@ -164,17 +238,21 @@ class App extends React.Component {
 
           <Button
             type="primary"
+            disabled={this.state.isLoading}
             onClick={() => {
-              console.log('###', this.state.data)
-              if (this.props.run) {
+              // console.log('###', this.state.data)
+              if (this.props.callback) {
                 this.props.callback({
-                  cmd: 'run',
+                  cmd: 'runPrompt',
                   data: {
                     name: this.state.name, data: this.state.data
                   }
                 })
               }
-            }}>{i18n.t('run')}</Button>
+              this.setState({
+                isLoading: true
+              })
+            }}>{this.state.isLoading ? <LoadingOutlined /> : i18n.t('runPrompt')}</Button>
         </Card>
 
       </Draggable>

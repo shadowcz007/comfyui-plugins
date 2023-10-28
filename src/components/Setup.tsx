@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { Button, Input, Tag, Typography, Card, Space } from 'antd';
+import { Button, Input, Tag, Typography, Card, Space, Divider } from 'antd';
 
 import { CloseOutlined, DeleteOutlined, PlayCircleOutlined } from '@ant-design/icons';
 import Draggable from 'react-draggable';
 import i18n from "i18next";
+
+import { savePosition, getPosition,onCardFocus } from './Common'
 
 const { Text, Title } = Typography;
 
@@ -25,22 +27,17 @@ interface App {
     props: PropType
 }
 
+
+const key = `_setup_position`
 const _savePosition = (e: any) => {
-
-    const { x, y } = e.target.getBoundingClientRect();
-    localStorage.setItem(`_setup_position`, JSON.stringify({
-        x, y
-    }))
-
+    savePosition(key, e)
 }
 
 class App extends React.Component {
 
     constructor(props: any) {
         super(props);
-        const defaultPosition = JSON.parse(localStorage.getItem(`_setup_position`) || JSON.stringify({
-            x: 0, y: 0
-        }))
+        const defaultPosition = getPosition(key);
         this.state = {
             title: i18n.t('Setup'),
             url: '',
@@ -51,6 +48,9 @@ class App extends React.Component {
     }
 
     componentDidMount() {
+
+        onCardFocus(key)
+        
         // this.setupConnection();
         window.electron.comfyApi('getSystemStats').then(async (res: any) => {
             let url = await window.electron.comfyApi('updateUrl')
@@ -102,6 +102,8 @@ class App extends React.Component {
                 defaultPosition={defaultPosition || { x: 0, y: 0 }}
                 onDrag={_savePosition}
                 onStop={_savePosition}
+                defaultClassName={`react-draggable ${key}`}
+                onMouseDown={()=>onCardFocus(key)}
             >
                 <Card
                     title={<strong className="cursor">
@@ -209,6 +211,7 @@ class App extends React.Component {
                             }</div>
                     </Space.Compact>
 
+                    <Divider />
 
                     <Button
                         onClick={async () => {

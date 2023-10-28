@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Input, Space, Tag, theme, Tooltip } from 'antd';
 import i18n from "i18next";
 
@@ -51,6 +51,23 @@ class App extends Component {
         this.editInputRef.current?.focus();
     }
 
+    componentDidUpdate(prevProps: Readonly<{}>, prevState: Readonly<{}>, snapshot?: any): void {
+        if (this.props.value != this.state.tags) {
+            let tags = this.props.value || [];
+            if (typeof (tags) === 'string') {
+                tags = this.props.value.split('\n');
+                tags = tags.filter((t: string) => t.trim());
+                if (tags.length <= 1) {
+                    tags = this.props.value.split(',');
+                    tags = tags.filter((t: string) => t.trim());
+                }
+            };
+            this.setState({
+                tags
+            })
+        }
+    }
+
     handleClose = (removedTag: any) => {
         const { tags } = this.state;
         const newTags = tags.filter((tag: any) => tag !== removedTag);
@@ -58,7 +75,7 @@ class App extends Component {
         this.props.onChange && this.props.onChange({
             currentTarget: {
                 value: newTags
-            } 
+            }
         });
     };
 
@@ -99,7 +116,7 @@ class App extends Component {
             editInputValue: '',
         });
 
-      
+
         this.props.onChange && this.props.onChange({
             currentTarget: {
                 value: newTags
@@ -108,10 +125,22 @@ class App extends Component {
 
     };
 
+    clear() {
+        this.setState({
+            tags: []
+        });
+
+        this.props.onChange && this.props.onChange({
+            currentTarget: {
+                value: []
+            }
+        });
+    }
+
     render() {
         const { tags, inputVisible, inputValue, editInputIndex, editInputValue } = this.state;
         return (
-            <Space size={[0, 8]} wrap style={{width: '100%'}}>
+            <Space size={[0, 8]} wrap style={{ width: '100%' }}>
                 {tags.map((tag: any, index: number) => {
                     if (editInputIndex === index) {
                         return (
@@ -165,9 +194,16 @@ class App extends Component {
                         onPressEnter={this.handleInputConfirm}
                     />
                 ) : (
-                    <Tag icon={<PlusOutlined />} onClick={this.showInput}>
-                        {i18n.t('New Tag')}
-                    </Tag>
+                    <>
+                        <Tag icon={<PlusOutlined />} onClick={this.showInput}>
+                            {i18n.t('New Tag')}
+                        </Tag>
+                        {
+                            this.state.tags.length > 0 && <Tag icon={<DeleteOutlined />} onClick={() => this.clear()}>
+                                {i18n.t('Clear')}
+                            </Tag>
+                        }
+                    </>
                 )}
             </Space>
         );

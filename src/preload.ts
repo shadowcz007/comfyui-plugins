@@ -193,7 +193,7 @@ const electronHandler = {
       api.socket = null
       api.socket?.close()
       api.init()
-      console.log(api)
+      // console.log(api)
       return newUrl
     }
   },

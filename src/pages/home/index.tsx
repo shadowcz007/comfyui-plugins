@@ -118,7 +118,7 @@ export const App = () => {
     const runPluginByName = async (name: string, inputs: any) => {
 
         let plugin = await initPlugin(name);
-        // console.log(plugin)
+        console.log(plugin)
 
         // TODO 需要提供一个校对节点是否有效的功能
 
@@ -162,7 +162,6 @@ export const App = () => {
     }
 
     const openSetup = async () => {
-
         setSetup(true)
     }
 
@@ -281,10 +280,10 @@ export const App = () => {
                     const { Running } = res;
                     if (Running.length === 0) {
                         alert('DONE')
-                        messageApi.open({
-                            type: 'success',
-                            content: 'DONE',
-                        });
+                        // messageApi.open({
+                        //     type: 'success',
+                        //     content: 'DONE',
+                        // });
 
                         window.postMessage({
                             cmd: 'status:done', data: {
@@ -379,7 +378,8 @@ export const App = () => {
                 input && <Inputs data={input}
                     callback={(e: any) => {
                         const { cmd, data } = e;
-                        if (cmd === 'run') {
+
+                        if (cmd === 'runPrompt') {
                             const { name, data: d } = data;
                             runPluginByName(name, d)
                         }
@@ -446,7 +446,7 @@ export const App = () => {
             {
                 displayWorkflowPlugins &&
                 <ItemList
-                    name="Workflow Plugins"
+                    name="Workflow_Plugins"
                     items={pluginItems}
                     pageSize={3}
                     callback={async (e: any) => {

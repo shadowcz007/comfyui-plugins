@@ -16,11 +16,16 @@ body {
     z-index: -99;
     top:0;
     left: 0;
+    display: none;
 }
 .menu-btns {
     position: fixed;
     bottom:12px;
     right: 12px;
+}
+
+.cursor{
+    cursor: move;
 }
 
 .output-images{
