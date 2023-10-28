@@ -26,8 +26,8 @@ interface App {
 }
 
 const _savePosition = (e: any) => {
-   
-    const { x, y } =e.target.getBoundingClientRect();
+
+    const { x, y } = e.target.getBoundingClientRect();
     localStorage.setItem(`_setup_position`, JSON.stringify({
         x, y
     }))
@@ -99,7 +99,7 @@ class App extends React.Component {
 
         return (
             <Draggable handle="strong"
-            defaultPosition={defaultPosition || { x: 0, y: 0 }}
+                defaultPosition={defaultPosition || { x: 0, y: 0 }}
                 onDrag={_savePosition}
                 onStop={_savePosition}
             >
@@ -208,6 +208,19 @@ class App extends React.Component {
                                 <Tag>{system?.python_version}</Tag>
                             }</div>
                     </Space.Compact>
+
+
+                    <Button
+                        onClick={async () => {
+                            let bg: any = document.querySelector('#bg')
+                            if (bg.style.display == 'none') {
+                                bg.style.display = 'block'
+                            } else {
+                                bg.style.display = 'none'
+                            }
+
+                        }}
+                    >{i18n.t('bg')}</Button>
 
 
                 </Card>
