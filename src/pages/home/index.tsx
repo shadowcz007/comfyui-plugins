@@ -65,7 +65,7 @@ export const App = () => {
 
 
     // input
-    const [input, setInput]: any = React.useState([]);
+    const [input, setInput]: any = React.useState(null);
 
     // output
     const [images, setImages]: any = React.useState({});
@@ -318,6 +318,11 @@ export const App = () => {
                         }
                     })
                 }
+            };
+
+            if (event == 'close-input') {
+                const { name } = data;
+                setInput(null);
             }
 
             if (event === 'status') {
@@ -371,7 +376,15 @@ export const App = () => {
             </Space>
 
             {
-                input && <Inputs data={input} run={runPluginByName} />
+                input && <Inputs data={input}
+                    callback={(e: any) => {
+                        const { cmd, data } = e;
+                        if (cmd === 'run') {
+                            const { name, data: d } = data;
+                            runPluginByName(name, d)
+                        }
+                    }}
+                />
             }
 
             {images.data && images.data?.length > 0 && <OutputImages

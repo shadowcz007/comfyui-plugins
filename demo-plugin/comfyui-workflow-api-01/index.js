@@ -128,7 +128,8 @@ export function init (extensionPoints) {
 
         for (const inp of inputs) {
           if (inp.id === '15.inputs.mutable_prompt') {
-            workflow['15'].inputs.mutable_prompt = inp.value
+            workflow['15'].inputs.mutable_prompt = inp.value.join('\n')
+            // workflow['15'].inputs.mutable_prompt = inp.value;
           }
         }
         console.log('##new workflow', workflow)
@@ -143,11 +144,21 @@ export function init (extensionPoints) {
           callback([
             {
               id: '15.inputs.mutable_prompt',
-              value: workflow['15'].inputs.mutable_prompt,
+              value: workflow['15'].inputs.mutable_prompt.split('\n'),
               label: '词典',
-              type: 'string'
+              type: 'tag'
             }
           ])
+
+          // callback([
+          //   {
+          //     id: '15.inputs.mutable_prompt',
+          //     value: workflow['15'].inputs.mutable_prompt,
+          //     label: '词典',
+          //     type: 'string'
+          //   }
+          // ])
+
         }
         return
       case 'progress':

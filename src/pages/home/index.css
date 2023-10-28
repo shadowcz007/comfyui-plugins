@@ -5,7 +5,7 @@ body {
     height: 100vh;
     width: fit-content;
     overflow: hidden;
-
+    user-select: none;
 }
 
 .menu-btns {
@@ -27,6 +27,9 @@ body {
     line-height: 48px;
 }
 
+.ant-card {
+    box-shadow: 3px 4px 13px 0 rgb(98 98 98 / 19%), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 2px 4px 18px 0 rgb(60 60 60 / 28%) !important;
+}
 
 .ant-card-body::-webkit-scrollbar {
     width: 12px;
@@ -37,6 +40,21 @@ body {
 }
 
 .ant-card-body::-webkit-scrollbar-thumb {
+    /*border-radius:15px;
+      -webkit-box-shadow:inset 0 0 5px rgba(0, 0,0, 0.2);
+      background:rgba(0, 0,0, 0.2);*/
+    border-left: 2px solid rgba(0, 0, 0, 0.2);
+}
+
+.scrollbar::-webkit-scrollbar {
+    width: 12px;
+}
+
+.scrollbar::-webkit-scrollbar-track {
+    border-right: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
     /*border-radius:15px;
       -webkit-box-shadow:inset 0 0 5px rgba(0, 0,0, 0.2);
       background:rgba(0, 0,0, 0.2);*/
