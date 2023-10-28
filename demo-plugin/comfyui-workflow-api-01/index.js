@@ -98,11 +98,6 @@ let workflow = {
 }
 
 export function init (extensionPoints) {
-  // window.electron.executeJavaScript(`
-  // (()=>{
-
-  // })()
-  // `)
 
   // varFromExtensionPoint 从app传来的变量
   const main = varFromExtensionPoint => {
