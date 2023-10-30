@@ -65,8 +65,8 @@ class App extends React.Component {
       <Draggable handle="strong"
         defaultPosition={defaultPosition || { x: 0, y: 0 }}
         defaultClassName={`react-draggable ${key}`}
-        onDrag={this._savePosition}
-        onStop={this._savePosition}
+        onDrag={(e:any)=>this._savePosition(e)}
+        onStop={(e:any)=>this._savePosition(e)}
         onMouseDown={()=>onCardFocus(key)}
       >
         <Card

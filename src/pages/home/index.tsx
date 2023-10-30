@@ -368,9 +368,9 @@ export const App = () => {
             >
 
                 {/* <h2  >{i18n.t('Manage plugin lifecycle')}</h2> */}
-                {status && <p
+                {/* {status && <p
                     style={{ color: 'white', background: 'gray' }}
-                >{JSON.stringify(status)}</p>}
+                >{JSON.stringify(status)}</p>} */}
 
             </Space>
 
@@ -378,7 +378,6 @@ export const App = () => {
                 input && <Inputs data={input}
                     callback={(e: any) => {
                         const { cmd, data } = e;
-
                         if (cmd === 'runPrompt') {
                             const { name, data: d } = data;
                             runPluginByName(name, d)

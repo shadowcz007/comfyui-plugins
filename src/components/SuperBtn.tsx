@@ -1,7 +1,7 @@
 import { AppstoreAddOutlined, WifiOutlined, FileSearchOutlined, SettingOutlined } from '@ant-design/icons';
 import React from 'react';
 import { FloatButton } from 'antd';
-
+import Draggable from 'react-draggable';
 
 type PropType = {
   [propName: string]: any;
@@ -22,7 +22,6 @@ class App extends React.Component {
     this.state = {
 
     }
-
   }
 
   componentDidMount() {
@@ -45,7 +44,9 @@ class App extends React.Component {
       serverStatus
     } = this.props;
     return (
-      <>
+      <Draggable  
+        defaultPosition={{ x: 0, y: 0 }}
+      >
         <FloatButton.Group
           trigger="hover"
           type="primary"
@@ -68,7 +69,7 @@ class App extends React.Component {
           />
 
         </FloatButton.Group>
-      </>
+      </Draggable>
     );
   }
 }

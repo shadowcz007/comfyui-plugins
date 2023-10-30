@@ -78,8 +78,8 @@ const App: any = (props: any) => {
       defaultPosition={defaultPosition || { x: 0, y: 0 }}
 
       handle="strong"
-      onDrag={_savePosition}
-      onStop={_savePosition}
+      onDrag={(e:any)=>_savePosition(e)}
+      onStop={(e:any)=>_savePosition(e)}
       defaultClassName={`react-draggable ${key}`}
       onMouseDown={() => onCardFocus(key)}
     >
