@@ -21,6 +21,7 @@ import {
 } from 'pluggable-electron/renderer'
 
 import ComfyApi from './preload/ComfyApi'
+import i18n from 'i18next'
 const api: any = new ComfyApi()
 
 const update = (data: any) => window.postMessage({ cmd: 'status:render', data })
@@ -201,7 +202,17 @@ const electronHandler = {
     ipcRenderer.invoke('main:handle', {
       cmd: 'server',
       data: { isStart, port, path, html }
+    }),
+  saveAs: (defaultPath: string, originFilePath: string) => {
+    ipcRenderer.invoke('main:handle', {
+      cmd: 'save-as',
+      data: {
+        title: i18n.t('save as'),
+        originFilePath,
+        defaultPath
+      }
     })
+  }
 }
 
 contextBridge.exposeInMainWorld('electron', electronHandler)

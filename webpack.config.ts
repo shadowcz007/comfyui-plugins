@@ -5,7 +5,7 @@ import CopyPlugin from 'copy-webpack-plugin'
 import path from 'path'
 
 const isDev = !!(process.env?.NODE_ENV !== "production");
-// console.log('isDev',isDev,process.env?.NODE_ENV,process.env?.NODE_ENV === "production")
+console.log('isDev',path.resolve(__dirname, "dist"))
 const common: Configuration = {
   mode: isDev ? "development" : "production",//TODO 待修复的bug：production打不出electron-main出来，dev可以。
   externals: ["fsevents"],

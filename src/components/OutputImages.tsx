@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
-import { Avatar, List, Image, Space, Button, Card } from 'antd';
+import { Avatar, List, Image, Dropdown, Button, Card } from 'antd';
 
 import { CloseOutlined, DeleteOutlined, PlayCircleOutlined } from '@ant-design/icons';
 import Draggable from 'react-draggable';
 import i18n from "i18next";
 import { savePosition, getPosition, onCardFocus } from './Common'
+
+declare const window: Window &
+    typeof globalThis & {
+        electron: any,
+    }
+
 
 
 
@@ -97,6 +103,13 @@ class App extends React.Component {
     })
   }
 
+  _contextMenu(e: any,imgurl:string) {
+    console.log(e.key,imgurl)
+    if(e.key==='saveAs'){
+      window.electron.saveAs(this.state.name+'.png',imgurl);
+    }
+  }
+
   render() {
     const { images, name, title, id, view } = this.state;
 
@@ -115,6 +128,18 @@ class App extends React.Component {
       displayCount = 1;
     }
 
+    const contextMenuIitems = [
+      {
+        label: i18n.t('save as'),
+        key: 'saveAs',
+
+      },
+      {
+        label: i18n.t('select'),
+        key: 'select',
+      }
+    ];
+
     return (
       <Draggable handle="strong"
         defaultPosition={this._defaultPosition || { x: 0, y: 0 }}
@@ -123,6 +148,8 @@ class App extends React.Component {
         onStop={(e: any) => this._savePosition(e)}
         onMouseDown={() => onCardFocus(this._key)}
       >
+
+
         <Card
           title={<strong className="cursor">
             <p>{title} {name} </p>
@@ -164,23 +191,30 @@ class App extends React.Component {
               onClick={() => this._create()}
             >{i18n.t('Generate a replica')}</Button>]}
         >
+
           <Image.PreviewGroup
             preview={{
               onChange: (current, prev) => console.log(`current index: ${current}, prev index: ${prev}`),
             }}
           >
+
             {
               Array.from(images, (imgurl: string, index: number) =>
-                <Image
-                  key={index}
-                  style={{
-                    display: index >= displayCount ? 'none' : 'block'
-                  }}
-                  width={imageWidth}
-                  src={imgurl} />)
+                <Dropdown
+                  menu={{ items: contextMenuIitems, onClick: (e: any) => this._contextMenu(e,imgurl) }}
+                  trigger={['contextMenu']}>
+                  <div><Image
+                    key={index}
+                    style={{
+                      display: index >= displayCount ? 'none' : 'block'
+                    }}
+                    width={imageWidth}
+                    src={imgurl} /></div></Dropdown>)
             }
 
+
           </Image.PreviewGroup>
+
           {/* <Image width={200} src={imgurl} /> */}
         </Card>
 
