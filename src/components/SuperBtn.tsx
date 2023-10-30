@@ -46,6 +46,7 @@ class App extends React.Component {
     return (
       <Draggable  
         defaultPosition={{ x: 0, y: 0 }}
+        defaultClassName='super-btn'
       >
         <FloatButton.Group
           trigger="hover"

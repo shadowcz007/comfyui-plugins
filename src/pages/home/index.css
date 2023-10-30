@@ -35,6 +35,9 @@ body {
     margin-left: 10%;
 }
 
+.super-btn{
+    z-index: 999999999;
+}
 .cursor{
     display: flex;
     width: 100%;

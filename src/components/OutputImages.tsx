@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Avatar, List, Image, Space, Card } from 'antd';
+import { Avatar, List, Image, Space, Button, Card } from 'antd';
 
 import { CloseOutlined, DeleteOutlined, PlayCircleOutlined } from '@ant-design/icons';
 import Draggable from 'react-draggable';
@@ -29,17 +29,18 @@ class App extends React.Component {
   constructor(props: any) {
     super(props);
 
-    const { name, data, title, id } = this.props.data;
+    const { name, data, title, id, from } = this.props.data;
 
     this.state = {
       name,
       images: data,
       title,
-      id
+      id,
+      from,
+      view: 0
     }
     this._key = `_output_images_position_${id ? id : ''}`
     this._defaultPosition = getPosition(this._key)
-
   }
 
   componentDidMount() {
@@ -67,25 +68,69 @@ class App extends React.Component {
     savePosition(this._key, e)
   }
 
+  _create() {
+    const {
+      name,
+      id,
+      from
+    } = this.state;
+
+    this.props.callback({
+      cmd: 'runPrompt',
+      data: {
+        name,
+        data: {
+          name,
+          id,
+          from
+        }
+      }
+    })
+  }
+
+  _changeView() {
+    let view = this.state.view;
+    view++;
+    if (view > 2) view = 0;
+    this.setState({
+      view
+    })
+  }
+
   render() {
-    const { images, name, title, id } = this.state;
+    const { images, name, title, id, view } = this.state;
+
+    let cardWidth = 480, imageWidth: any = 200, displayCount = 4;
+    if (view == 0) {
+      cardWidth = 480;
+      imageWidth = 200;
+      displayCount = 4;
+    } else if (view === 1) {
+      cardWidth = 360;
+      imageWidth = 100;
+      displayCount = 9;
+    } else if (view === 2) {
+      cardWidth = 560;
+      imageWidth = '100%';
+      displayCount = 1;
+    }
 
     return (
       <Draggable handle="strong"
         defaultPosition={this._defaultPosition || { x: 0, y: 0 }}
         defaultClassName={`react-draggable ${this._key}`}
-        onDrag={(e:any)=>this._savePosition(e)}
-        onStop={(e:any)=>this._savePosition(e)}
+        onDrag={(e: any) => this._savePosition(e)}
+        onStop={(e: any) => this._savePosition(e)}
         onMouseDown={() => onCardFocus(this._key)}
       >
         <Card
           title={<strong className="cursor">
-            <p>{title}</p>
-            <p>{name} {images.length}</p>
+            <p>{title} {name} </p>
+            <p>{i18n.t('A total of')} {images.length}</p>
           </strong>}
           bordered={false}
           style={{
-            width: 480,
+            width: cardWidth,
             position: 'fixed',
             // left: 120, top: '10vh', 
             // height: '80vh' 
@@ -110,7 +155,14 @@ class App extends React.Component {
               })
             }}
           />}
-        // actions={actions}
+          actions={[
+            <Button
+              onClick={() => this._changeView()}
+            >{i18n.t('change view')}</Button>,
+            <Button
+              type="primary"
+              onClick={() => this._create()}
+            >{i18n.t('Generate a replica')}</Button>]}
         >
           <Image.PreviewGroup
             preview={{
@@ -122,9 +174,9 @@ class App extends React.Component {
                 <Image
                   key={index}
                   style={{
-                    display: index > 3 ? 'none' : 'block'
+                    display: index >= displayCount ? 'none' : 'block'
                   }}
-                  width={200}
+                  width={imageWidth}
                   src={imgurl} />)
             }
 

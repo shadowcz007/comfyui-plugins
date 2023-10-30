@@ -143,10 +143,10 @@ class App extends React.Component {
                         disabled={this.state.disabled}
                         onClick={async () => {
                             if (callback) {
-                                console.log('#run', { name: data.name, ...data })
+                                // console.log('#run', { name: data.name, ...data })
                                 callback({
                                     cmd: 'run',
-                                    data: { name: data.name, ...data }
+                                    data: { name: data.name, ...data, from: 'history' }
                                 });
                                 if (!this.state.isHistory) this.setState({ play: true })
                             }
