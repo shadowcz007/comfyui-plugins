@@ -6,7 +6,7 @@ import Draggable from 'react-draggable';
 import i18n from "i18next";
 
 import Item from './Item';
-import { savePosition, getPosition,onCardFocus } from './Common'
+import { savePosition, getPosition, onCardFocus } from './Common'
 
 const App: any = (props: any) => {
   const { name, items, callback, actions, pageSize } = props;
@@ -17,7 +17,7 @@ const App: any = (props: any) => {
 
   const _dragRef: any = React.useRef();
 
-  const key = `_workflow_plugin_position_${name}`;
+  const key = (name === 'History') ? `_history_position` : `_workflow_plugin_position`;
 
   const defaultPosition = getPosition(key);
 
@@ -81,7 +81,7 @@ const App: any = (props: any) => {
       onDrag={_savePosition}
       onStop={_savePosition}
       defaultClassName={`react-draggable ${key}`}
-      onMouseDown={()=>onCardFocus(key)}
+      onMouseDown={() => onCardFocus(key)}
     >
       <Card
         title={<strong className="cursor">{i18n.t(name)}</strong>}
@@ -124,6 +124,7 @@ const App: any = (props: any) => {
           renderItem={(item: any, index) => {
             return <List.Item key={index}>
               <Item
+                isHistory={name === 'History'}
                 data={item}
                 callback={callback}
               />

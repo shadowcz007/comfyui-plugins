@@ -26,7 +26,8 @@ class App extends React.Component {
         this.state = {
             data: this.props.data,
             play: false,
-            disabled: false
+            disabled: false,
+            isHistory: this.props.isHistory
         }
         // console.log(this.props.data)
         window.addEventListener('message', (res: any) => {
@@ -142,12 +143,12 @@ class App extends React.Component {
                         disabled={this.state.disabled}
                         onClick={async () => {
                             if (callback) {
-                                // console.log(name)
+                                console.log('#run', { name: data.name, ...data })
                                 callback({
                                     cmd: 'run',
                                     data: { name: data.name, ...data }
                                 });
-                                this.setState({ play: true })
+                                if (!this.state.isHistory) this.setState({ play: true })
                             }
                         }}
                     />}
