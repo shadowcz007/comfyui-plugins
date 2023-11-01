@@ -5,6 +5,7 @@ import { CloseOutlined, LoadingOutlined, PlayCircleOutlined } from '@ant-design/
 import Draggable from 'react-draggable';
 import i18n from "i18next";
 
+import InputBlock from './InputBlock'
 import InputTag from './InputTag'
 import InputCascader from './InputCascader'
 
@@ -220,6 +221,29 @@ class App extends React.Component {
                       {cascader}
                     </div>
                     <InputTag
+                      value={item.value}
+                      style={{ marginBottom: 12 }}
+                      onChange={(e: any) => {
+                        this._updateData(item.id, e.currentTarget.value);
+                      }}
+                    />
+                    <Divider />
+                  </>)
+                }
+
+                
+                if (item.type === 'block') {
+                  div.push(<>
+                    <div style={{
+                      display: 'flex',
+                      width: '100%',
+                      justifyContent: 'space-between',
+                      margin: '12px 0'
+                    }}>
+                      <Text style={{ marginBottom: 12 }}>{item.label} </Text>
+                      {cascader}
+                    </div>
+                    <InputBlock
                       value={item.value}
                       style={{ marginBottom: 12 }}
                       onChange={(e: any) => {

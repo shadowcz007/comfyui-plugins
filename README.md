@@ -54,3 +54,5 @@ TODO:
 - 需要验证nodes是否有效
 
 https://github.com/Kagami/ffmpeg.js
+
+- sharp 安装不成功
