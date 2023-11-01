@@ -24,7 +24,6 @@ import { rendererInit } from '../../i18n/config'
 rendererInit()
 
 
-
 // Set Pluggable Electron up in the renderer
 async function setupPE() {
     // Enable the activation points
@@ -41,11 +40,12 @@ async function setupPE() {
 }
 setupPE()
 
-
+// console.log('extensionPoints',extensionPoints,setupPE)
 
 declare const window: Window &
     typeof globalThis & {
         electron: any,
+        _u: any
     }
 
 
@@ -77,15 +77,6 @@ export const App = () => {
     const initPlugin = async (name: string) => {
         await setupPE();
 
-        const app = extensionPoints.get('app');
-        for (const plugin of app._extensions) {
-            if (plugin.name != name) {
-                extensionPoints.unregisterAll(new RegExp(plugin.name));
-            }
-        }
-
-        // console.log(app._extensions)
-
         let items = await window.electron.getPluginsList();
 
         items = Array.from(items, (i: any) => {
@@ -93,7 +84,7 @@ export const App = () => {
             return i
         })
 
-        console.log('runPluginByName', items)
+        console.log('runPluginByName', name, items)
         setPlugins(items)
 
         let plugin = items.filter((item: any) => item.name === name)[0]
@@ -102,8 +93,9 @@ export const App = () => {
 
     // 获取插件的输入
     const getInput = async (name: string) => {
-        let plugin = await initPlugin(name);
-        if (extensionPoints.get('app')) extensionPoints.execute('app', {
+        // let plugin = await initPlugin(name);
+        // console.log('extensionPoints', extensionPoints.get('app'))
+        if (extensionPoints.get(name)) extensionPoints.execute(name, {
             event: 'get-input',
             data: {
                 callback: async (result: any) => {
@@ -118,7 +110,7 @@ export const App = () => {
     const runPluginByName = async (name: string, inputs: any) => {
 
         let plugin = await initPlugin(name);
-        console.log(plugin)
+        // console.log('extensionPoints',extensionPoints.get('app'))
 
         // TODO 需要提供一个校对节点是否有效的功能
 
@@ -365,160 +357,158 @@ export const App = () => {
                 },
             }}
         >
-          
-                    <Space
-                        className="menu-btns"
-                    >
 
-                        {/* <h2  >{i18n.t('Manage plugin lifecycle')}</h2> */}
-                        {/* {status && <p
+            <Space
+                className="menu-btns"
+            >
+
+                {/* <h2  >{i18n.t('Manage plugin lifecycle')}</h2> */}
+                {/* {status && <p
                     style={{ color: 'white', background: 'gray' }}
                 >{JSON.stringify(status)}</p>} */}
 
-                    </Space>
+            </Space>
 
-                    {
-                        input && <Inputs data={input}
-                            callback={(e: any) => {
-                                const { cmd, data } = e;
-                                if (cmd === 'runPrompt') {
-                                    const { name, data: d } = data;
-                                    runPluginByName(name, d)
-                                }
-                            }}
-                        />
-                    }
+            {
+                input && <Inputs data={input}
+                    callback={(e: any) => {
+                        const { cmd, data } = e;
+                        if (cmd === 'runPrompt') {
+                            const { name, data: d } = data;
+                            runPluginByName(name, d)
+                        }
+                    }}
+                />
+            }
 
-                    {images.data && images.data?.length > 0 && <OutputImages
-                        data={images}
-                    />}
+            {images.data && images.data?.length > 0 && <OutputImages
+                data={images}
+            />}
 
-                    {prompts.data && prompts.data?.length > 0 && <OutputPrompts
-                        data={prompts}
-                    />}
-
-
-                    {/* 做一个历史记录的列表 */}
-                    {displayHistory &&
-                        <ItemList
-                            name="History"
-                            items={historyItems}
-                            callback={async (e: any) => {
-                                // console.log(e)
-                                const { cmd, data } = e;
-                                if (cmd === 'display') {
-                                    const { show } = data;
-                                    setDisplayHistory(show);
-                                } else if (cmd === 'run') {
-                                    // 显示历史记录结果                        
-                                    const { type, id } = data;
-                                    console.log('displayHistory', data);
-                                    if (type === 'images') {
-                                        // 图片结果
-                                        setImages(data);
-                                    } else if (type === 'prompts') {
-                                        // prompts结果
-                                        setPrompts(data);
-                                    }
-
-                                    window.postMessage({
-                                        cmd: 'status:switch',
-                                        data: {
-                                            id
-                                        }
-                                    })
+            {prompts.data && prompts.data?.length > 0 && <OutputPrompts
+                data={prompts}
+            />}
 
 
-                                } else if (cmd == 'interrupt') {
-
-                                    const { type } = data;
-                                    // console.log('items',items);
-                                    if (type === 'images') {
-                                        // 图片结果
-                                        setImages({})
-                                    } else if (type === 'prompts') {
-                                        // prompts结果
-
-                                    }
-                                }
-                            }}
-                        />}
-
-
-                    {
-                        displayWorkflowPlugins &&
-                        <ItemList
-                            name="Workflow_Plugins"
-                            items={pluginItems}
-                            pageSize={3}
-                            callback={async (e: any) => {
-                                // console.log(e)
-                                const { cmd, data } = e;
-                                if (cmd === 'remove') {
-                                    const { name } = data;
-                                    if (name) {
-                                        const res = await plugins.uninstall([name])
-                                        console.log(res ? 'Plugin successfully uninstalled' : 'Plugin could not be uninstalled')
-                                        let items = await window.electron.getPluginsList();
-                                        setPlugins(items)
-                                    }
-                                } else if (cmd === 'display') {
-                                    const { show } = data;
-                                    setDisplayWorkflowPlugins(show);
-
-                                    // let items = await window.electron.getPluginsList();
-                                    // console.log(items)
-                                } else if (cmd == 'run') {
-                                    const { name } = data;
-                                    if (name) {
-
-                                        // runPluginByName(name);
-                                        getInput(name);
-
-                                    }
-                                } else if (cmd == 'interrupt') {
-                                    const { name } = data;
-                                    //TODO  根据workflow来取消
-                                    window.electron.comfyApi('interrupt');
-                                }
-
-                            }}
-
-                            actions={
-                                [
-                                    <Button onClick={
-                                        async () => {
-                                            const pluginFiles = window.electron.openInstallFile()
-                                            if (pluginFiles) {
-                                                // console.log(pluginFiles)
-                                                const installed = await plugins.install(pluginFiles)
-                                                // console.log('Installed plugin:', installed);
-                                                setStatus(installed);
-                                                // await setupPE();
-                                                window.electron.getPluginsList().then((items: any) => {
-                                                    // console.log('install', items)
-                                                    setPlugins(items);
-                                                })
-                                            }
-
-                                        }}> <PlusOutlined /> {i18n.t('Install')}</Button>,
-                                    <Button onClick={getQueue}> <DashboardOutlined /> {i18n.t('getQueue')}</Button>
-
-
-                                ]
+            {/* 做一个历史记录的列表 */}
+            {displayHistory &&
+                <ItemList
+                    name="History"
+                    items={historyItems}
+                    callback={async (e: any) => {
+                        // console.log(e)
+                        const { cmd, data } = e;
+                        if (cmd === 'display') {
+                            const { show } = data;
+                            setDisplayHistory(show);
+                        } else if (cmd === 'run') {
+                            // 显示历史记录结果                        
+                            const { type, id } = data;
+                            console.log('displayHistory', data);
+                            if (type === 'images') {
+                                // 图片结果
+                                setImages(data);
+                            } else if (type === 'prompts') {
+                                // prompts结果
+                                setPrompts(data);
                             }
-                        />
+
+                            window.postMessage({
+                                cmd: 'status:switch',
+                                data: {
+                                    id
+                                }
+                            })
+
+
+                        } else if (cmd == 'interrupt') {
+
+                            const { type } = data;
+                            // console.log('items',items);
+                            if (type === 'images') {
+                                // 图片结果
+                                setImages({})
+                            } else if (type === 'prompts') {
+                                // prompts结果
+
+                            }
+                        }
+                    }}
+                />}
+
+
+            {
+                displayWorkflowPlugins &&
+                <ItemList
+                    name="Workflow_Plugins"
+                    items={pluginItems}
+                    pageSize={3}
+                    callback={async (e: any) => {
+                        // console.log(e)
+                        const { cmd, data } = e;
+                        if (cmd === 'remove') {
+                            const { name } = data;
+                            if (name) {
+                                const res = await plugins.uninstall([name])
+                                console.log(res ? 'Plugin successfully uninstalled' : 'Plugin could not be uninstalled')
+                                let items = await window.electron.getPluginsList();
+                                setPlugins(items)
+                            }
+                        } else if (cmd === 'display') {
+                            const { show } = data;
+                            setDisplayWorkflowPlugins(show);
+
+                            // let items = await window.electron.getPluginsList();
+                            // console.log(items)
+                        } else if (cmd == 'run') {
+                            const { name } = data;
+                            if (name) {
+                                // runPluginByName(name);
+                                getInput(name);
+                            }
+                        } else if (cmd == 'interrupt') {
+                            const { name } = data;
+                            //TODO  根据workflow来取消
+                            window.electron.comfyApi('interrupt');
+                        }
+
+                    }}
+
+                    actions={
+                        [
+                            <Button onClick={
+                                async () => {
+                                    const pluginFiles = window.electron.openInstallFile()
+                                    if (pluginFiles) {
+                                        // console.log(pluginFiles)
+                                        const installed = await plugins.install(pluginFiles)
+                                        // console.log('Installed plugin:', installed);
+                                        setStatus(installed);
+                                        // await setupPE();
+                                        window.electron.getPluginsList().then((items: any) => {
+                                            // console.log('install', items)
+                                            setPlugins(items);
+                                        })
+                                    }
+
+                                }}> <PlusOutlined /> {i18n.t('Install')}</Button>,
+                            <Button onClick={getQueue}> <DashboardOutlined /> {i18n.t('getQueue')}</Button>
+
+
+                        ]
                     }
+                />
+            }
 
-                    {setup && <Setup />}
+            {setup && <Setup />}
 
-                    <SuperBtn
-                        openPlugin={openPlugin}
-                        getHistory={getHistory}
-                        openSetup={openSetup}
-                        serverStatus={serverStatus}
-                    />
-         
+            <SuperBtn
+                openPlugin={openPlugin}
+                getHistory={getHistory}
+                openSetup={openSetup}
+                serverStatus={serverStatus}
+            />
+
         </ConfigProvider>
 
     );

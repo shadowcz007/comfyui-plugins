@@ -134,6 +134,6 @@ export function init (extensionPoints) {
     }
   }
 
-  // app 是应用暴露的api集合
-  extensionPoints.register('app', 'picture-book', main)
+  // 注册插件名称，
+  extensionPoints.register('picture-book', 'picture-book', main)
 }

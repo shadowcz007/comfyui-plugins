@@ -1,22 +1,9 @@
 import React, { Component } from 'react';
-import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
-import { Input, Space, Tag, Typography, Tooltip } from 'antd';
+import { PlusOutlined, DeleteOutlined, CloseOutlined } from '@ant-design/icons';
+import { Input, Space, Tag, Typography, Button, Card } from 'antd';
 import i18n from "i18next";
 
 
-const { Text } = Typography;
-const EllipsisMiddle: React.FC<{ suffixCount: number; children: string }> = ({
-    suffixCount,
-    children,
-}) => {
-    const start = children.slice(0, children.length - suffixCount).trim();
-    const suffix = children.slice(-suffixCount).trim();
-    return (
-        <Text style={{ maxWidth: '100%' }} ellipsis={{ suffix }}>
-            {start}
-        </Text>
-    );
-};
 
 type PropType = {
     [propName: string]: any;
@@ -154,61 +141,67 @@ class App extends Component {
     render() {
         const { tags, inputVisible, inputValue, editInputIndex, editInputValue } = this.state;
         return (
-            <Space size={[0, 8]} wrap style={{ width: '100%' }}>
+            <Space size={[0, 8]}
+                wrap
+                className='scrollbar'
+                style={{
+                    width: '100%',
+                    maxHeight: 560,
+                    overflowY: 'scroll',
+                    paddingBottom:36
+                }}>
                 {tags.map((tag: any, index: number) => {
                     if (editInputIndex === index) {
                         return (
-                            <Input
+                            <Input.TextArea
                                 ref={this.editInputRef}
                                 key={tag}
-                                size="large"
+                                autoSize={{ minRows: 3, maxRows: 5 }}
                                 value={editInputValue}
                                 onChange={this.handleEditInputChange}
                                 onBlur={this.handleEditInputConfirm}
-                                onPressEnter={this.handleEditInputConfirm}
+                                style={{
+                                    width:400,border:'none'
+                                }}
+                            // onPressEnter={this.handleEditInputConfirm}
                             />
                         );
                     }
                     // const isLongTag = tag.length > 20;
+
                     const tagElem = (
-                        <Tag
+                        <div
                             key={tag}
-                            closable={index >= 0}
-                            style={{ userSelect: 'none' }}
-                            onClose={() => this.handleClose(tag)}
+                           
+                            style={{ userSelect: 'none', marginBottom: 8 }}
+                            onDoubleClick={(e) => {
+                                if (index >= 0) {
+                                    this.setState({ editInputIndex: index, editInputValue: tag });
+                                    e.preventDefault();
+                                }
+                            }}
                         >
-
-
-
-                            <div
-                                onDoubleClick={(e) => {
-                                    if (index >= 0) {
-                                        this.setState({ editInputIndex: index, editInputValue: tag });
-                                        e.preventDefault();
-                                    }
-                                }}
-                            >
-                              {tag}
-                                {/* {isLongTag ? `${tag.slice(0, 20)}...` : tag} */}
-                            </div>
-                        </Tag>
+                            {tag}  <CloseOutlined onClick={() => this.handleClose(tag)} />
+                        </div>
                     );
                     return tagElem;
                 })}
                 {inputVisible ? (
-                    <Input
+                    <Input.TextArea
                         ref={this.inputRef}
-                        type="text"
-                        size="large"
                         value={inputValue}
+                        autoSize={{ minRows: 3, maxRows: 5 }}
                         onChange={this.handleInputChange}
                         onBlur={this.handleInputConfirm}
                         onPressEnter={this.handleInputConfirm}
+                        style={{
+                            width:400
+                        }}
                     />
                 ) : (
                     <>
                         <Tag icon={<PlusOutlined />} onClick={this.showInput}>
-                            {i18n.t('New Tag')}
+                            {i18n.t('New Block')}
                         </Tag>
                         {
                             this.state.tags.length > 0 && <Tag icon={<DeleteOutlined />} onClick={() => this.clear()}>

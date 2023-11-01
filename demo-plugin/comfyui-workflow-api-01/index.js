@@ -141,7 +141,8 @@ export function init (extensionPoints) {
               id: '15.inputs.mutable_prompt',
               value: workflow['15'].inputs.mutable_prompt.split('\n'),
               label: '词典',
-              type: 'tag'
+              type: 'tag',
+              cascader:true
             }
           ])
 
@@ -163,6 +164,6 @@ export function init (extensionPoints) {
     }
   }
 
-  // app 是应用暴露的api集合
-  extensionPoints.register('app', 'comfyui-workflow-api', main)
+  // 注册插件名称，
+  extensionPoints.register('comfyui-workflow-api', 'comfyui-workflow-api', main)
 }

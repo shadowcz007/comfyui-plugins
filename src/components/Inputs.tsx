@@ -158,7 +158,7 @@ class App extends React.Component {
               let div = [];
               for (const item of this.state.data) {
                 let cascader: any = "";
-                if (!item.cascader) {
+                if (item.cascader) {
                   // true
                   cascader = <InputCascader
                     onChange={(e: any) => {
