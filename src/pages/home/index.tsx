@@ -93,7 +93,7 @@ export const App = () => {
 
     // 获取插件的输入
     const getInput = async (name: string) => {
-        // let plugin = await initPlugin(name);
+        let plugin = await initPlugin(name);
         // console.log('extensionPoints', extensionPoints.get('app'))
         if (extensionPoints.get(name)) extensionPoints.execute(name, {
             event: 'get-input',
