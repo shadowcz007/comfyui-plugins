@@ -47,15 +47,6 @@ let workflow = {
     },
     "class_type": "KSampler SDXL (Eff.)"
   },
-  "10": {
-    "inputs": {
-      "images": [
-        "5",
-        3
-      ]
-    },
-    "class_type": "PreviewImage"
-  },
   "14": {
     "inputs": {
       "max_count": 9,
@@ -65,6 +56,18 @@ let workflow = {
       "prompts": "Story books illustrations,colorful ink. The little boy, named Timmy, gazed up at the night sky with wonder.\n\nStory books illustrations,colorful ink. He dreamed of reaching the stars and exploring the mysteries of the universe.\n\nStory books illustrations,colorful ink. Timmy built a spaceship out of cardboard boxes and imagined himself soaring through the galaxy.\n\nStory books illustrations,colorful ink. With his trusty telescope in hand, Timmy searched for constellations and planets.\n\nStory books illustrations,colorful ink. One night, Timmy discovered a hidden map that led to a secret planet.\n\nStory books illustrations,colorful ink. Timmy embarked on an exciting journey, following the map's clues and encountering strange creatures along the way.\n\nStory books illustrations,colorful ink. Finally, Timmy reached the secret planet and was greeted by a group of friendly aliens.\n\nStory books illustrations,colorful ink. Together with his new alien friends, Timmy learned about the wonders of the universe and shared his own stories from Earth.\n\nStory books illustrations,colorful ink. Timmy returned home with a heart full of joy and a newfound love for the stars."
     },
     "class_type": "RandomPrompt"
+  },
+  "15": {
+    "inputs": {
+      "invert": "invert",
+      "save": "yes",
+      "filename_prefix": "picbook",
+      "images": [
+        "5",
+        3
+      ]
+    },
+    "class_type": "TransparentImage"
   }
 }
 

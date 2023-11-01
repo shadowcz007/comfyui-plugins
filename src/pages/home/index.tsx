@@ -115,7 +115,7 @@ export const App = () => {
         // TODO 需要提供一个校对节点是否有效的功能
 
         // name version
-        if (extensionPoints.get('app')) extensionPoints.execute('app', {
+        if (extensionPoints.get(name)) extensionPoints.execute(name, {
             event: 'run',
             data: {
                 inputs,

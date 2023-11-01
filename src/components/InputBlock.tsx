@@ -18,6 +18,13 @@ interface App {
     props: PropType
 }
 
+declare const window: Window &
+    typeof globalThis & {
+        electron: any,
+    }
+
+
+
 class App extends Component {
     inputRef: any;
     editInputRef: any;
@@ -84,6 +91,27 @@ class App extends Component {
         this.setState({ inputVisible: true });
     };
 
+    pasteBlock = () => {
+        const text = window.electron.pasteText();
+        const ts = Array.from(text.split('\n').filter((t: any) => t), (t: any) => t.trim());
+        console.log(ts)
+        if (ts.length > 0) {
+            const newTags = [
+                ...this.state.tags,
+                ...ts
+            ]
+            this.setState({
+                tags: newTags
+            });
+
+            this.props.onChange && this.props.onChange({
+                currentTarget: {
+                    value: newTags
+                }
+            });
+        }
+    }
+
     handleInputChange = (e: { target: { value: any; }; }) => {
         this.setState({ inputValue: e.target.value });
     };
@@ -148,7 +176,7 @@ class App extends Component {
                     width: '100%',
                     maxHeight: 560,
                     overflowY: 'scroll',
-                    paddingBottom:36
+                    paddingBottom: 36
                 }}>
                 {tags.map((tag: any, index: number) => {
                     if (editInputIndex === index) {
@@ -161,7 +189,7 @@ class App extends Component {
                                 onChange={this.handleEditInputChange}
                                 onBlur={this.handleEditInputConfirm}
                                 style={{
-                                    width:400,border:'none'
+                                    width: 400, border: 'none'
                                 }}
                             // onPressEnter={this.handleEditInputConfirm}
                             />
@@ -172,7 +200,7 @@ class App extends Component {
                     const tagElem = (
                         <div
                             key={tag}
-                           
+
                             style={{ userSelect: 'none', marginBottom: 8 }}
                             onDoubleClick={(e) => {
                                 if (index >= 0) {
@@ -195,13 +223,16 @@ class App extends Component {
                         onBlur={this.handleInputConfirm}
                         onPressEnter={this.handleInputConfirm}
                         style={{
-                            width:400
+                            width: 400
                         }}
                     />
                 ) : (
                     <>
                         <Tag icon={<PlusOutlined />} onClick={this.showInput}>
                             {i18n.t('New Block')}
+                        </Tag>
+                        <Tag icon={<PlusOutlined />} onClick={this.pasteBlock}>
+                            {i18n.t('Paste Block')}
                         </Tag>
                         {
                             this.state.tags.length > 0 && <Tag icon={<DeleteOutlined />} onClick={() => this.clear()}>

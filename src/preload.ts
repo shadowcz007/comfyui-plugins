@@ -146,6 +146,9 @@ const electronHandler = {
   },
   isDebug,
   platform: process.platform,
+  pasteText: () => {
+    return clipboard.readText()
+  },
   executeJavaScript: (code: string) => {
     return ipcRenderer.invoke('main:handle', {
       cmd: 'executeJavaScript',
