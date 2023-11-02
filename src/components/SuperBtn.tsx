@@ -43,6 +43,7 @@ class App extends React.Component {
       getHistory,
       serverStatus
     } = this.props;
+     
     return (
       <Draggable  
         defaultPosition={{ x: 0, y: 0 }}

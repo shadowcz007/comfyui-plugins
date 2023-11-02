@@ -97,6 +97,7 @@ class ComfyApi extends EventTarget {
       if (this.socket) this.socket.close()
       if (!isReconnect && !opened) {
         // this.#pollQueue()
+        this.dispatchEvent(new CustomEvent('status', { detail: null }))
       }
     })
 

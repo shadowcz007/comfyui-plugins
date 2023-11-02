@@ -44,8 +44,7 @@ setupPE()
 
 declare const window: Window &
     typeof globalThis & {
-        electron: any,
-        _u: any
+        electron: any
     }
 
 
@@ -84,7 +83,7 @@ export const App = () => {
             return i
         })
 
-        console.log('runPluginByName', name, items)
+        // console.log('runPluginByName', name, items)
         setPlugins(items)
 
         let plugin = items.filter((item: any) => item.name === name)[0];
@@ -165,12 +164,11 @@ export const App = () => {
         const items = await window.electron.comfyApi('getHistory');
         let history = JSON.parse(localStorage.getItem('_plugin_history_') || '[]');
 
-
         for (const item of items) {
             const { name } = item.workflow;
 
             // name 需要判断是否是已安装的插件
-            console.log(pluginItems.filter((p: any) => p.name == name)[0])
+            // console.log(pluginItems.filter((p: any) => p.name == name)[0])
             if (pluginItems.filter((p: any) => p.name == name)[0]) {
                 for (const nodeId in item.outputs) {
                     // 暂时只支持Mixlab的图片输出节点
@@ -189,7 +187,10 @@ export const App = () => {
                             })
                         }
                     }
-                    if (item.outputs[nodeId].images) {
+                    if (item.outputs[nodeId].images
+                        && item.outputs[nodeId].images[0]
+                        && item.outputs[nodeId].images[0].type == 'output') {
+
                         // 拼路径 
                         let images = await getImagePaths(item.outputs[nodeId].images || [])
 
@@ -230,7 +231,7 @@ export const App = () => {
 
         localStorage.setItem('_plugin_history_', JSON.stringify(history))
         setHistoryItems(history);
-        // console.log(result)
+        console.log(items,history)
         setDisplayHistory(true)
     }
 
@@ -377,6 +378,7 @@ export const App = () => {
 
             if (event === 'status') {
                 // 是否连接了服务器
+                console.log('是否连接了服务器', data)
                 if (data) {
                     // 正常
                     setServerStatus(0)
@@ -411,7 +413,7 @@ export const App = () => {
             theme={{
                 token: {
                     // Seed Token，影响范围大
-                    colorPrimary: '#00b96b',
+                    colorPrimary: serverStatus === 0 ? '#00b96b' : 'gray',
                     borderRadius: 2,
 
                     // 派生变量，影响范围小

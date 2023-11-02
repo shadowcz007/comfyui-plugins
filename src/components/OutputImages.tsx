@@ -11,10 +11,6 @@ declare const window: Window &
     electron: any,
   }
 
-
-
-
-
 type PropType = {
   [propName: string]: any;
 }
@@ -134,10 +130,10 @@ class App extends React.Component {
         key: 'saveAs',
 
       },
-      {
-        label: i18n.t('select'),
-        key: 'select',
-      }
+      // {
+      //   label: i18n.t('select'),
+      //   key: 'select',
+      // }
     ];
 
     return (
