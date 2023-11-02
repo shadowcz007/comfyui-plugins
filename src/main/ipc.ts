@@ -37,6 +37,23 @@ function copyFile (sourcePath: any, destinationPath: any) {
   })
 }
 
+function saveBase64Image (base64String: string, filePath: any) {
+  // Remove the data:image/<image-extension>;base64 prefix
+  const base64Data = base64String.replace(/^data:image\/\w+;base64,/, '')
+
+  // Create a buffer from the base64 string
+  const imageBuffer = Buffer.from(base64Data, 'base64')
+
+  // Save the buffer as an image file
+  fs.writeFile(filePath, imageBuffer, (err: any) => {
+    if (err) {
+      console.error('Error saving image:', err)
+    } else {
+      console.log('Image saved successfully!')
+    }
+  })
+}
+
 const pluginsPaths = path.join(app.getPath('userData'), 'plugins')
 
 // 遍历文件夹下的文件
@@ -112,7 +129,7 @@ const init = (plugins: any) => {
               ...item,
               avatar: info[item.name].avatar,
               info: info[item.name],
-              id: hash({ url: item.url })  //取hash
+              id: hash({ url: item.url }) //取hash
             })
         }
         return itemsNew
@@ -136,7 +153,7 @@ const init = (plugins: any) => {
 
       case 'save-as':
         let win: any = BrowserWindow.getFocusedWindow()
-        const { title, originFilePath, defaultPath } = data
+        const { title, originFilePath, defaultPath, base64 } = data
         const filepath: string =
           dialog.showSaveDialogSync(win, {
             title,
@@ -151,7 +168,11 @@ const init = (plugins: any) => {
           }) || ''
 
         if (filepath) {
-          copyFile(originFilePath, filepath)
+          if (originFilePath) {
+            copyFile(originFilePath, filepath)
+          } else if (base64) {
+            saveBase64Image(base64, filepath)
+          }
         }
 
       default:

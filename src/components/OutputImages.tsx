@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Avatar, List, Image, Dropdown, Button, Card } from 'antd';
+import { Avatar, Space, Image, Dropdown, Button, Card } from 'antd';
 
-import { CloseOutlined, DeleteOutlined, PlayCircleOutlined } from '@ant-design/icons';
+import { CloseOutlined, DownloadOutlined, DeleteOutlined, PlayCircleOutlined } from '@ant-design/icons';
 import Draggable from 'react-draggable';
 import i18n from "i18next";
 import { savePosition, getPosition, onCardFocus } from './Common'
@@ -56,7 +56,8 @@ class App extends React.Component {
       this.setState({
         name,
         images: data,
-        title, id
+        title, id,
+        current: 0
       })
       this._key = `_output_images_position_${id ? id : ''}`
     }
@@ -99,10 +100,38 @@ class App extends React.Component {
     })
   }
 
-  _contextMenu(e: any, imgurl: string) {
-    console.log(e.key, imgurl)
+  _convertImageToBase64 = (url: string) => {
+    return new Promise((res, rej) => {
+      var xhr = new XMLHttpRequest();
+      xhr.onload = function () {
+        var reader = new FileReader();
+        reader.onloadend = function () {
+          res(reader.result);
+        }
+        reader.readAsDataURL(xhr.response);
+      };
+      xhr.open('GET', url);
+      xhr.responseType = 'blob';
+      xhr.send();
+    })
+
+  }
+
+  async _onDownload(e: any) {
+    console.log(e, this.state.images[this.state.current])
+    const imgurl = this.state.images[this.state.current]
+    if (imgurl) {
+      let base64 = await this._convertImageToBase64(imgurl);
+      window.electron.saveAs(this.state.name + '.png', { base64 });
+    }
+  }
+
+  async _contextMenu(e: any, imgurl: string) {
+    // console.log(e.key, imgurl)
     if (e.key === 'saveAs') {
-      window.electron.saveAs(this.state.name + '.png', imgurl);
+      // 读取为base64
+      let base64 = await this._convertImageToBase64(imgurl);
+      window.electron.saveAs(this.state.name + '.png', { base64 });
     }
   }
 
@@ -191,7 +220,22 @@ class App extends React.Component {
 
           <Image.PreviewGroup
             preview={{
-              onChange: (current, prev) => console.log(`current index: ${current}, prev index: ${prev}`),
+              toolbarRender: (
+                _,
+                {
+                  transform: { scale },
+                  actions: { onFlipY, onFlipX, onRotateLeft, onRotateRight, onZoomOut, onZoomIn },
+                },
+              ) => (
+                <Space size={12} className="toolbar-wrapper">
+                  <DownloadOutlined
+                    onClick={(e) => this._onDownload(e)} />
+                </Space>
+              ),
+              onChange: (current, prev) => {
+                console.log(`current index: ${current}, prev index: ${prev}`)
+                this.setState({ current })
+              },
             }}
           >
 
@@ -205,11 +249,12 @@ class App extends React.Component {
                       key={index}
                       style={{
                         display: index >= displayCount ? 'none' : 'block',
-                        maxHeight:600
+                        maxHeight: 600
                       }}
                       width={imageWidth}
-                      
-                      src={imgurl} />
+                      src={imgurl}
+                      onClick={() => this.setState({ current: index })}
+                    />
                   </div>
                 </Dropdown>)
             }

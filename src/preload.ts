@@ -207,12 +207,12 @@ const electronHandler = {
       cmd: 'server',
       data: { isStart, port, path, html }
     }),
-  saveAs: (defaultPath: string, originFilePath: string) => {
+  saveAs: (defaultPath: string, data:any) => {
     ipcRenderer.invoke('main:handle', {
       cmd: 'save-as',
       data: {
         title: i18n.t('save as'),
-        originFilePath,
+        ...data,
         defaultPath
       }
     })
