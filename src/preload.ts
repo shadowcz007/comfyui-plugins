@@ -68,8 +68,7 @@ const apiInit = () => {
     console.log('execution_start', detail)
     if (extensionPoints.get('app'))
       extensionPoints.execute('app', { event: 'execution_start', data: detail })
-
-    update({ event: 'execution_start', data: detail })
+    if (detail) update({ event: 'execution_start', data: detail })
   })
 
   api.addEventListener('execution_error', ({ detail }: any) => {
@@ -80,7 +79,6 @@ const apiInit = () => {
 
   api.addEventListener('b_preview', ({ detail }: any) => {
     console.log('b_preview', detail)
-
     update({ event: 'b_preview', data: detail })
   })
 
@@ -199,6 +197,9 @@ const electronHandler = {
       api.init()
       // console.log(api)
       return newUrl
+    } else if (cmd === 'apiURL') {
+      const { route } = data || {}
+      return api.apiURL(route || '')
     }
   },
   server: (isStart: boolean, port: number, path: string, html: string) =>

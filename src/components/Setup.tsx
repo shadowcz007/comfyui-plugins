@@ -5,7 +5,7 @@ import { CloseOutlined, DeleteOutlined, PlayCircleOutlined } from '@ant-design/i
 import Draggable from 'react-draggable';
 import i18n from "i18next";
 
-import { savePosition, getPosition,onCardFocus } from './Common'
+import { savePosition, getPosition, onCardFocus } from './Common'
 
 const { Text, Title } = Typography;
 
@@ -50,7 +50,7 @@ class App extends React.Component {
     componentDidMount() {
 
         onCardFocus(key)
-        
+
         // this.setupConnection();
         window.electron.comfyApi('getSystemStats').then(async (res: any) => {
             let url = await window.electron.comfyApi('updateUrl')
@@ -103,7 +103,7 @@ class App extends React.Component {
                 onDrag={_savePosition}
                 onStop={_savePosition}
                 defaultClassName={`react-draggable ${key}`}
-                onMouseDown={()=>onCardFocus(key)}
+                onMouseDown={() => onCardFocus(key)}
             >
                 <Card
                     title={<strong className="cursor">
@@ -162,6 +162,8 @@ class App extends React.Component {
                                         serverStatus: !!res
                                     })
                                     console.log('updateUrl', res)
+                                    // localStorage.setItem('hostUrl', `http://${url}`);
+                                    
                                 }}
                             >{serverStatus ? i18n.t('refreshUrl') : i18n.t('serverError')}</Button>
                         </Space.Compact>

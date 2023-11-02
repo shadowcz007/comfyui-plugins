@@ -2,11 +2,10 @@ const { ipcMain, BrowserWindow, app, dialog } = require('electron')
 const path = require('path')
 // const sharp = require('sharp');
 const fs = require('fs-extra')
-
+const hash = require('object-hash')
 import server from './server'
 
-
-function copyPNGWithMetadata(sourcePath: any, destinationPath: any) {
+function copyPNGWithMetadata (sourcePath: any, destinationPath: any) {
   // sharp(sourcePath)
   //   .clone()
   //   .toFile(destinationPath, (err: any, info: any) => {
@@ -112,7 +111,8 @@ const init = (plugins: any) => {
             itemsNew.push({
               ...item,
               avatar: info[item.name].avatar,
-              info: info[item.name]
+              info: info[item.name],
+              id: hash({ url: item.url })  //取hash
             })
         }
         return itemsNew
@@ -140,7 +140,7 @@ const init = (plugins: any) => {
         const filepath: string =
           dialog.showSaveDialogSync(win, {
             title,
-            defaultPath: defaultPath||'',
+            defaultPath: defaultPath || '',
             properties: [],
             filters: [
               { name: 'Images', extensions: ['jpg', 'png', 'gif'] },

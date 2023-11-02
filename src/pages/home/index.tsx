@@ -87,7 +87,8 @@ export const App = () => {
         console.log('runPluginByName', name, items)
         setPlugins(items)
 
-        let plugin = items.filter((item: any) => item.name === name)[0]
+        let plugin = items.filter((item: any) => item.name === name)[0];
+
         return plugin
     }
 
@@ -99,8 +100,8 @@ export const App = () => {
             event: 'get-input',
             data: {
                 callback: async (result: any) => {
-                    console.log('#get-input', result)
-                    setInput({ name, data: result });
+                    // console.log('#get-input', result)
+                    setInput({ name, id: plugin.id, data: result });
                 }
             }
         })
@@ -127,14 +128,17 @@ export const App = () => {
                                 output: prompt,
                                 workflow: {
                                     name: plugin.name,
-                                    id: plugin.url //取hash
+                                    id: plugin.id
                                 }
                             })
+
                         setStatus(res);
 
-                        console.log(prompt, res)
+                        console.log('##executeWorkflow', prompt, res)
                         localStorage.setItem('_plugin_current_workflow', JSON.stringify({
                             name: plugin.name,
+                            prompt_id: res.prompt_id,//当前任务id
+                            id: plugin.id,
                             prompt
                         }))
                     }
@@ -184,8 +188,26 @@ export const App = () => {
                                 ...d, id
                             })
                         }
-
                     }
+                    if (item.outputs[nodeId].images) {
+                        // 拼路径 
+                        let images = await getImagePaths(item.outputs[nodeId].images || [])
+
+                        let d = {
+                            type: 'images',
+                            data: images,
+                            name,
+                            avatar: images[0]
+                        }
+                        let id = hash(d);
+                        if (!history.filter((h: any) => h.id == id)[0]) {
+                            history.push({
+                                ...d, id
+                            })
+                        }
+                    }
+
+
                     if (item.outputs[nodeId].prompts) {
 
                         let d = {
@@ -221,12 +243,24 @@ export const App = () => {
 
     const [messageApi, contextHolder] = message.useMessage();
 
+    const getImagePaths = async (imgs: any) => {
+        let images = [];
+        for (const img of imgs) {
+            const { filename, subfolder, type } = img;
+            let url = await window.electron.comfyApi('apiURL', {
+                route: `/view?filename=${filename}&subfolder=${subfolder}&type=${type}`
+            });
+            images.push(url);
+        }
+        return images
+    }
+
     useEffect(() => {
         window.electron.getPluginsList().then((items: any) => {
             setPlugins(items);
             window.electron.comfyApi('init')
         });
-        window.addEventListener('message', (res: any) => {
+        window.addEventListener('message', async (res: any) => {
             console.log('###message', res.data?.data, pluginItems)
             const { event, data } = res.data?.data;
             setStatus({
@@ -235,14 +269,19 @@ export const App = () => {
             })
             if (event == 'executed') {
 
+                const res_prompt_id = data.prompt_id;
 
                 const workflow = JSON.parse(localStorage.getItem('_plugin_current_workflow') || '{}')
 
+                // 判断是否任务id是否匹配
+                if (workflow.prompt_id !== res_prompt_id) return;
+
+
                 const plugin = pluginItems.filter((p: any) => p.name === workflow.name)[0];
 
-                console.log('executed', data, workflow, plugin);
-
                 const node = workflow.prompt[data.node];
+
+                console.log('###executed', data, workflow, plugin, node);
 
                 // 暂时只支持mixlab自定义节点
                 if (node.class_type == "TransparentImage") {
@@ -258,8 +297,28 @@ export const App = () => {
                         node: data.node,//获取node的详细信息
                         title
                     });
+                } else if (node.class_type == "SaveImage") {
+                    let title = node.inputs.filename_prefix;
 
+                    // TODO 需要拼路径
+                    let images = await getImagePaths(data.output?.images || [])
+
+                    console.log('executed SaveImage', images);
+                    setImages({
+                        data: images,
+                        type: 'images',
+                        name: workflow.name,
+                        promptId: data.prompt_id,
+                        node: data.node,//获取node的详细信息
+                        title
+                    });
                 }
+
+                window.postMessage({
+                    cmd: 'status:done', data: {
+                        id: workflow.id
+                    }
+                })
 
                 // if (data.output?.prompts) {
                 //     // console.log('executed', data.output.prompts);
@@ -268,29 +327,29 @@ export const App = () => {
                 // }
 
                 // 检查是否还在runing
-                getQueue().then(res => {
-                    const { Running } = res;
-                    if (Running.length === 0) {
-                        alert('DONE')
-                        // messageApi.open({
-                        //     type: 'success',
-                        //     content: 'DONE',
-                        // });
+                // getQueue().then(res => {
+                //     const { Running } = res;
+                //     if (Running.length === 0) {
+                //         alert('DONE')
+                //         // messageApi.open({
+                //         //     type: 'success',
+                //         //     content: 'DONE',
+                //         // });
 
-                        window.postMessage({
-                            cmd: 'status:done', data: {
-                                name
-                            }
-                        })
-                    }
-                })
+                //         window.postMessage({
+                //             cmd: 'status:done', data: {
+                //                 id: workflow.id
+                //             }
+                //         })
+                //     }
+                // })
 
             }
-            if (event === 'execution_start') {
-                // prompt_id
-                let prompt_id = data.prompt_id;
-                console.log('#execution_start', prompt_id)
-            }
+            // if (event === 'execution_start') {
+            //     // prompt_id
+            //     let prompt_id = data.prompt_id;
+            //     console.log('#execution_start', prompt_id)
+            // }
 
             if (event === 'close-output') {
                 const { name, type, id } = data;
@@ -332,7 +391,10 @@ export const App = () => {
                 setProgress(100 * value / max)
             }
 
-
+            if (event === 'b_preview') {
+                // 预览
+                //data: Blob
+            }
         })
         return () => {
             // if (backFn) {
@@ -492,7 +554,7 @@ export const App = () => {
                                     }
 
                                 }}> <PlusOutlined /> {i18n.t('Install')}</Button>,
-                            <Button onClick={getQueue}> <DashboardOutlined /> {i18n.t('getQueue')}</Button>
+                            // <Button onClick={getQueue}> <DashboardOutlined /> {i18n.t('getQueue')}</Button>
 
 
                         ]

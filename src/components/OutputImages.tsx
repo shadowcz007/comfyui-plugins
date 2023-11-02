@@ -7,9 +7,9 @@ import i18n from "i18next";
 import { savePosition, getPosition, onCardFocus } from './Common'
 
 declare const window: Window &
-    typeof globalThis & {
-        electron: any,
-    }
+  typeof globalThis & {
+    electron: any,
+  }
 
 
 
@@ -103,10 +103,10 @@ class App extends React.Component {
     })
   }
 
-  _contextMenu(e: any,imgurl:string) {
-    console.log(e.key,imgurl)
-    if(e.key==='saveAs'){
-      window.electron.saveAs(this.state.name+'.png',imgurl);
+  _contextMenu(e: any, imgurl: string) {
+    console.log(e.key, imgurl)
+    if (e.key === 'saveAs') {
+      window.electron.saveAs(this.state.name + '.png', imgurl);
     }
   }
 
@@ -160,7 +160,7 @@ class App extends React.Component {
             width: cardWidth,
             position: 'fixed',
             // left: 120, top: '10vh', 
-            // height: '80vh' 
+            maxHeight: '80vh'
           }}
           bodyStyle={{
             display: 'flex',
@@ -186,10 +186,11 @@ class App extends React.Component {
             <Button
               onClick={() => this._changeView()}
             >{i18n.t('change view')}</Button>,
-            <Button
-              type="primary"
-              onClick={() => this._create()}
-            >{i18n.t('Generate a replica')}</Button>]}
+            // <Button
+            //   type="primary"
+            //   onClick={() => this._create()}
+            // >{i18n.t('Generate a replica')}</Button>
+          ]}
         >
 
           <Image.PreviewGroup
@@ -201,15 +202,20 @@ class App extends React.Component {
             {
               Array.from(images, (imgurl: string, index: number) =>
                 <Dropdown
-                  menu={{ items: contextMenuIitems, onClick: (e: any) => this._contextMenu(e,imgurl) }}
+                  menu={{ items: contextMenuIitems, onClick: (e: any) => this._contextMenu(e, imgurl) }}
                   trigger={['contextMenu']}>
-                  <div><Image
-                    key={index}
-                    style={{
-                      display: index >= displayCount ? 'none' : 'block'
-                    }}
-                    width={imageWidth}
-                    src={imgurl} /></div></Dropdown>)
+                  <div>
+                    <Image
+                      key={index}
+                      style={{
+                        display: index >= displayCount ? 'none' : 'block',
+                        maxHeight:600
+                      }}
+                      width={imageWidth}
+                      
+                      src={imgurl} />
+                  </div>
+                </Dropdown>)
             }
 
 

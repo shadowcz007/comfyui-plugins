@@ -31,7 +31,7 @@ const App: any = (props: any) => {
   const _pageSize = pageSize || 2;
 
   React.useEffect(() => {
-    console.log('items', items)
+    // console.log('items', items)
     setItems(items);
     setData(items.slice(_pageSize * (current - 1), _pageSize * current));
 
@@ -41,11 +41,11 @@ const App: any = (props: any) => {
       window.addEventListener('message', (res: any) => {
         const { event, data } = res.data?.data;
 
-        if (event === 'execution_start') {
-          // prompt_id
-          let prompt_id = data.prompt_id;
-          console.log('#execution_start', prompt_id)
-        }
+        // if (event === 'execution_start') {
+        //   // prompt_id
+        //   let prompt_id = data.prompt_id;
+        //   console.log('#execution_start', prompt_id)
+        // }
 
         if (event === 'status') {
           // 是否连接了服务器
@@ -106,7 +106,7 @@ const App: any = (props: any) => {
         actions={actions}
 
       >
-        {progress <= 100 && <Progress steps={5} percent={progress} />}
+       
         <List
           pagination={{
             position: 'top',

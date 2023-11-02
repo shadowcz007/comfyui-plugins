@@ -98,7 +98,6 @@ let workflow = {
 }
 
 export function init (extensionPoints) {
-
   // varFromExtensionPoint 从app传来的变量
   const main = varFromExtensionPoint => {
     let workflowNew = {}
@@ -107,6 +106,10 @@ export function init (extensionPoints) {
       // 更新seed
       if (node.inputs?.seed)
         node.inputs.seed = Math.round(Math.random() * 200000000000)
+
+      if (node.inputs?.noise_seed)
+        node.inputs.noise_seed = Math.round(Math.random() * 200000000000)
+
       workflowNew[key] = node
     }
 
@@ -142,7 +145,7 @@ export function init (extensionPoints) {
               value: workflow['15'].inputs.mutable_prompt.split('\n'),
               label: '词典',
               type: 'tag',
-              cascader:true
+              cascader: true
             }
           ])
 
@@ -154,7 +157,6 @@ export function init (extensionPoints) {
           //     type: 'string'
           //   }
           // ])
-
         }
         return
       case 'progress':

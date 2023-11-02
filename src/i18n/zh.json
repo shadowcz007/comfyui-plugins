@@ -3,5 +3,8 @@
     "Ok":"确认",
     "Cancel":"取消",
     "bg":"切换背景",
-    "Workflow_Plugins":"工作流/插件"
+    "Workflow_Plugins":"工作流/插件",
+    "Install":"安装",
+    "getQueue":"getQueue",
+    "change view":"切换视图"
 }

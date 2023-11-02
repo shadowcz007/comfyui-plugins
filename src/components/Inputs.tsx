@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Input, List, Image, Button, Space, Typography, Card, Divider } from 'antd';
+import { Input, List, Image, Button, Progress, Typography, Card, Divider } from 'antd';
 
 import { CloseOutlined, LoadingOutlined, PlayCircleOutlined } from '@ant-design/icons';
 import Draggable from 'react-draggable';
@@ -44,14 +44,20 @@ class App extends React.Component {
   }
 
   _init() {
-    const name = this.props.data?.name
-    this._defaultPosition = getPosition(`_${name}_inputs_position`)
+    const name = this.props.data?.name,
+      id = this.props.data?.id;
+
+    this._defaultPosition = getPosition(`_${name}_inputs_position`);
+
     return {
-      name,
+      name, id,
       data: this.props.data?.data,
       Running: [],
       Pending: [],
-      isLoading: false
+      isLoading: false,
+      serverStatus: 0,
+      progress: 101,
+      executionStart: false
     }
   }
 
@@ -79,15 +85,69 @@ class App extends React.Component {
       this.setState({ Running, Pending })
     });
 
-    window.addEventListener('message', (res: any) => {
+    window.addEventListener('message', async (res: any) => {
       const { cmd, data } = res.data;
+      const { event, data: d2 } = data;
+
+      console.log('##inputs', data)
+
       if (cmd === 'status:done') {
-        if (data.name === this.state.name) {
+        if (data.id === this.state.id) {
           this.setState({
             isLoading: false
           })
         }
       }
+
+      if (event === 'execution_start') {
+        // prompt_id
+        let prompt_id = d2.prompt_id;
+        console.log('#execution_start', prompt_id)
+        if (!prompt_id) return
+        const workflow = JSON.parse(localStorage.getItem('_plugin_current_workflow') || '{}')
+
+        // 判断是否任务id是否匹配
+
+        this.setState({
+          executionStart: workflow.prompt_id == prompt_id,
+          isLoading: workflow.prompt_id == prompt_id,
+        })
+
+        if (workflow.prompt_id !== prompt_id) {
+          // getQueue
+
+          const queue = await window.electron.comfyApi('getQueue');
+          const { Running, Pending } = queue;
+          console.log('#queue', Running, Pending)
+
+        }
+
+      }
+
+      if (event === 'status') {
+        // 是否连接了服务器
+        if (d2) {
+          // 正常
+          this.setState({
+            serverStatus: 0
+          })
+        } else {
+          // 服务不可用
+          this.setState({
+            serverStatus: 1
+          })
+        }
+      }
+
+      if (event === 'progress') {
+        const { value, max } = d2;
+
+        this.setState({
+          progress: 100 * value / max
+        })
+
+      }
+
     })
 
   }
@@ -147,9 +207,10 @@ class App extends React.Component {
 
           {
             <>
-              <>{this.state.Running.length}</>
-              <>{this.state.Pending.length}</>
-              <Divider />
+              {/* <>{this.state.id}</>
+               */}
+              {this.state.progress <= 100 && <Progress steps={5} percent={this.state.progress} />}
+              {/* <Divider /> */}
             </>
           }
 
@@ -170,7 +231,7 @@ class App extends React.Component {
                             d.value += ',' + e.currentTarget.value.join(',')
                           } else if (Array.isArray(d.value)) {
                             for (const v of e.currentTarget.value) {
-                              if(!d.value.includes(v)){
+                              if (!d.value.includes(v)) {
                                 d.value.push(v)
                               }
                             }
@@ -231,7 +292,7 @@ class App extends React.Component {
                   </>)
                 }
 
-                
+
                 if (item.type === 'block') {
                   div.push(<>
                     <div style={{
