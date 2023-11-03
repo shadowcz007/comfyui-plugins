@@ -52,7 +52,7 @@ Plugins就是按照这个思路设计的，提供comfyui应用的交互界面。
 
 TODO:
 - 需要验证nodes是否有效
-
+- 
 https://github.com/Kagami/ffmpeg.js
 
 - sharp 安装不成功
