@@ -121,17 +121,22 @@ class App extends React.Component {
     console.log(e, this.state.images[this.state.current])
     const imgurl = this.state.images[this.state.current]
     if (imgurl) {
-      let base64 = await this._convertImageToBase64(imgurl);
-      window.electron.saveAs(this.state.name + '.png', { base64 });
+      this._save(imgurl)
     }
   }
 
+  async _save(imgurl: string) {
+    const { value } = window.electron.global('input');
+    console.log(window.electron.global('input'))
+    // 读取为base64
+    let base64 = await this._convertImageToBase64(imgurl);
+    let id = window.electron.hash({ value, base64 })
+    window.electron.saveAs(`${this.state.name}_${this.state.current}_${id}.png`, { base64 });
+  }
+
   async _contextMenu(e: any, imgurl: string) {
-    // console.log(e.key, imgurl)
     if (e.key === 'saveAs') {
-      // 读取为base64
-      let base64 = await this._convertImageToBase64(imgurl);
-      window.electron.saveAs(this.state.name + '.png', { base64 });
+      this._save(imgurl)
     }
   }
 

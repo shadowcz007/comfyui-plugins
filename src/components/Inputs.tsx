@@ -75,6 +75,13 @@ class App extends React.Component {
     this.setState({
       data: newData
     })
+
+    // 全局共享
+    window.electron.global('input', newData);
+    // this.props.callback({
+    //   cmd:'onChange',
+    //   data:{value:newData}
+    // })
   }
 
   componentDidMount() {
@@ -338,6 +345,21 @@ class App extends React.Component {
                 isLoading: true
               })
             }}>{this.state.isLoading ? <LoadingOutlined /> : i18n.t('runPrompt')}</Button>
+
+          <Button
+            onClick={() => {
+              // console.log('###', this.state.data)
+              if (this.props.callback) {
+                this.props.callback({
+                  cmd: 'savePrompt',
+                  data: {
+                    name: this.state.name, data: this.state.data
+                  }
+                })
+              }
+              
+            }}>{i18n.t('savePrompt')}</Button>
+
         </Card>
 
       </Draggable>

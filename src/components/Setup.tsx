@@ -224,6 +224,9 @@ class App extends React.Component {
                                 bg.style.display = 'none'
                             }
 
+                            // 发到main，
+                            window.electron.setAlwaysOnTop(bg.style.display == 'none')
+
                         }}
                     >{i18n.t('bg')}</Button>
 

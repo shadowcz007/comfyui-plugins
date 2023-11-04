@@ -101,6 +101,7 @@ export const App = () => {
                 callback: async (result: any) => {
                     // console.log('#get-input', result)
                     setInput({ name, id: plugin.id, data: result });
+                    window.electron.global('input', result)
                 }
             }
         })
@@ -231,7 +232,7 @@ export const App = () => {
 
         localStorage.setItem('_plugin_history_', JSON.stringify(history))
         setHistoryItems(history);
-        console.log(items,history)
+        console.log(items, history)
         setDisplayHistory(true)
     }
 
@@ -406,8 +407,6 @@ export const App = () => {
     }, []);
 
 
-
-    // console.log('images',images)
     return (
         <ConfigProvider
             theme={{
@@ -440,7 +439,7 @@ export const App = () => {
                         if (cmd === 'runPrompt') {
                             const { name, data: d } = data;
                             runPluginByName(name, d)
-                        }
+                        };
                     }}
                 />
             }

@@ -175,6 +175,10 @@ const init = (plugins: any) => {
           }
         }
 
+      case 'setAlwaysOnTop':
+        const { setAlwaysOnTop } = data
+        let wm = BrowserWindow.getFocusedWindow()
+        wm?.setAlwaysOnTop(setAlwaysOnTop)
       default:
         break
     }

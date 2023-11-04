@@ -12,6 +12,13 @@ type StateType = {
     [stateName: string]: any;
 }
 
+declare const window: Window &
+    typeof globalThis & {
+        electron: any,
+    }
+
+
+
 interface App {
     state: StateType;
     props: PropType
@@ -82,7 +89,26 @@ class App extends Component {
     showInput = () => {
         this.setState({ inputVisible: true });
     };
+    pasteTag = () => {
+        const text = window.electron.pasteText();
+        const ts = Array.from(text.split('\n').filter((t: any) => t), (t: any) => t.trim());
+        // console.log(ts)
+        if (ts.length > 0) {
+            const newTags = [
+                ...this.state.tags,
+                ...ts
+            ]
+            this.setState({
+                tags: newTags
+            });
 
+            this.props.onChange && this.props.onChange({
+                currentTarget: {
+                    value: newTags
+                }
+            });
+        }
+    }
     handleInputChange = (e: { target: { value: any; }; }) => {
         this.setState({ inputValue: e.target.value });
     };
@@ -197,6 +223,9 @@ class App extends Component {
                     <>
                         <Tag icon={<PlusOutlined />} onClick={this.showInput}>
                             {i18n.t('New Tag')}
+                        </Tag>
+                        <Tag icon={<PlusOutlined />} onClick={this.pasteTag}>
+                            {i18n.t('Paste Tag')}
                         </Tag>
                         {
                             this.state.tags.length > 0 && <Tag icon={<DeleteOutlined />} onClick={() => this.clear()}>

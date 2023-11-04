@@ -7,7 +7,7 @@ import {
   webFrame,
   BrowserWindow
 } from 'electron'
-
+const hash = require('object-hash')
 const remote = require('@electron/remote')
 
 const useFacade = require('pluggable-electron/facade')
@@ -84,6 +84,8 @@ const apiInit = () => {
 
   api.init()
 }
+
+const global: any = {}
 
 const isDebug = !!process?.env.npm_lifecycle_script?.match('--DEV')
 
@@ -207,7 +209,7 @@ const electronHandler = {
       cmd: 'server',
       data: { isStart, port, path, html }
     }),
-  saveAs: (defaultPath: string, data:any) => {
+  saveAs: (defaultPath: string, data: any) => {
     ipcRenderer.invoke('main:handle', {
       cmd: 'save-as',
       data: {
@@ -216,6 +218,19 @@ const electronHandler = {
         defaultPath
       }
     })
+  },
+  setAlwaysOnTop: (setAlwaysOnTop: boolean) => {
+    ipcRenderer.invoke('main:handle', {
+      cmd: 'setAlwaysOnTop',
+      data: { setAlwaysOnTop }
+    })
+  },
+  global: (key: string, val: any) => {
+    if (val !== undefined) global[key] = val
+    return global[key]
+  },
+  hash:(obj:any)=>{
+    return hash(obj)
   }
 }
 
