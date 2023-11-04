@@ -144,6 +144,18 @@ const electronHandler = {
       }) || ''
     return filepath
   },
+  getPath: (key: string='userData') => {
+    return ipcRenderer.invoke('main:handle', {
+      cmd: 'getPath',
+      data: { type: key }
+    })
+  },
+  readPath: (  _type = 'cascaders') => {
+    return ipcRenderer.invoke('main:handle', {
+      cmd: 'read-file',
+      data: { _type  }
+    })
+  },
   isDebug,
   platform: process.platform,
   pasteText: () => {
@@ -229,7 +241,7 @@ const electronHandler = {
     if (val !== undefined) global[key] = val
     return global[key]
   },
-  hash:(obj:any)=>{
+  hash: (obj: any) => {
     return hash(obj)
   }
 }

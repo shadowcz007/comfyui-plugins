@@ -126,11 +126,11 @@ class App extends React.Component {
   }
 
   async _save(imgurl: string) {
-    const { value } = window.electron.global('input');
+    const input = window.electron.global('input');
     console.log(window.electron.global('input'))
     // 读取为base64
     let base64 = await this._convertImageToBase64(imgurl);
-    let id = window.electron.hash({ value, base64 })
+    let id = window.electron.hash({ input, base64 })
     window.electron.saveAs(`${this.state.name}_${this.state.current}_${id}.png`, { base64 });
   }
 

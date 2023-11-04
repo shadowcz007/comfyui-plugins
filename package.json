@@ -1,11 +1,11 @@
 {
-  "name": "plugins",
+  "name": "comfyui-plugins",
   "version": "0.0.1",
-  "description": "plugins",
+  "description": "Turn any ComfyUI workflow into an application",
   "license": "MIT",
   "author": {
     "name": "shadow",
-    "url": "https://github.com/shadowcz007/plugins"
+    "url": "https://github.com/shadowcz007/comfyui-plugins"
   },
   "contributors": [],
   "private": false,

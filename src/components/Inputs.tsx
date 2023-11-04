@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Input, List, Image, Button, Progress, Typography, Card, Divider } from 'antd';
+import { Input, Modal, Image, Button, Progress, Typography, Card, Divider } from 'antd';
 
 import { CloseOutlined, LoadingOutlined, PlayCircleOutlined } from '@ant-design/icons';
 import Draggable from 'react-draggable';
@@ -57,7 +57,9 @@ class App extends React.Component {
       isLoading: false,
       serverStatus: 0,
       progress: 101,
-      executionStart: false
+      executionStart: false,
+      openModal: false,
+      savePromptObj: null
     }
   }
 
@@ -172,197 +174,260 @@ class App extends React.Component {
   render() {
 
     return (
-      <Draggable handle="strong"
-        defaultClassName={`react-draggable _${this.state.name}_inputs_position`}
-        defaultPosition={this._defaultPosition}
-        onDrag={(e) => this._savePosition(e)}
-        onStop={(e) => this._savePosition(e)}
-        onMouseDown={() => onCardFocus(`_${this.state.name}_inputs_position`)}
-      >
-        <Card
-          title={<strong className="cursor">
-            <p>{this.state.name}</p>
-            <p>{'#inputs'}</p>
-          </strong>}
-          bordered={false}
-          style={{
-            width: 480,
-            position: 'fixed',
-            // left: 120, top: '10vh', 
-            // height: '80vh' 
-          }}
-          bodyStyle={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'flex-start',
-            alignItems: 'center'
-          }}
-          extra={<CloseOutlined key="edit"
-            onClick={async () => {
-              window.postMessage({
-                data: {
-                  event: 'close-input',
-                  data: {
-                    name
-                  }
-                }
-              })
-            }}
-          />}
-        // actions={actions}
+      <>
+        <Draggable handle="strong"
+          defaultClassName={`react-draggable _${this.state.name}_inputs_position`}
+          defaultPosition={this._defaultPosition}
+          onDrag={(e) => this._savePosition(e)}
+          onStop={(e) => this._savePosition(e)}
+          onMouseDown={() => onCardFocus(`_${this.state.name}_inputs_position`)}
         >
+          <Card
+            title={<strong className="cursor">
+              <p>{this.state.name}</p>
+              <p>{'#inputs'}</p>
+            </strong>}
+            bordered={false}
+            style={{
+              width: 480,
+              position: 'fixed',
+              // left: 120, top: '10vh', 
+              // height: '80vh' 
+            }}
+            bodyStyle={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'flex-start',
+              alignItems: 'center'
+            }}
+            extra={<CloseOutlined key="edit"
+              onClick={async () => {
+                window.postMessage({
+                  data: {
+                    event: 'close-input',
+                    data: {
+                      name
+                    }
+                  }
+                })
+              }}
+            />}
+          // actions={actions}
+          >
 
-          {
-            <>
-              {/* <>{this.state.id}</>
+            {
+              <>
+                {/* <>{this.state.id}</>
                */}
-              {this.state.progress <= 100 && <Progress steps={5} percent={this.state.progress} />}
-              {/* <Divider /> */}
-            </>
-          }
+                {this.state.progress <= 100 && <Progress steps={5} percent={this.state.progress} />}
+                {/* <Divider /> */}
+              </>
+            }
 
-          {
-            this.state.data?.length > 0 && (() => {
-              let div = [];
-              for (const item of this.state.data) {
-                let cascader: any = "";
-                if (item.cascader) {
-                  // true
-                  cascader = <InputCascader
-                    onChange={(e: any) => {
-                      console.log(e)
-                      let newItemValue;
-                      Array.from(this.state.data, (d: any) => {
-                        if (d.id === item.id) {
-                          if (typeof (d.value) === 'string') {
-                            d.value += ',' + e.currentTarget.value.join(',')
-                          } else if (Array.isArray(d.value)) {
-                            for (const v of e.currentTarget.value) {
-                              if (!d.value.includes(v)) {
-                                d.value.push(v)
+            {
+              this.state.data?.length > 0 && (() => {
+                let div = [];
+                for (const item of this.state.data) {
+                  let cascader: any = "";
+                  if (item.cascader) {
+                    // true
+                    cascader = <InputCascader
+                      onChange={(e: any) => {
+                        console.log(e)
+                        let newItemValue;
+                        Array.from(this.state.data, (d: any) => {
+                          if (d.id === item.id) {
+                            if (typeof (d.value) === 'string') {
+                              d.value += ',' + e.currentTarget.value.join(',')
+                            } else if (Array.isArray(d.value)) {
+                              for (const v of e.currentTarget.value) {
+                                if (!d.value.includes(v)) {
+                                  d.value.push(v)
+                                }
                               }
+                              // d.value = [...d.value, ...e.currentTarget.value]
                             }
-                            // d.value = [...d.value, ...e.currentTarget.value]
+                            newItemValue = d.value;
                           }
-                          newItemValue = d.value;
-                        }
-                        return d
-                      })
+                          return d
+                        })
 
-                      if (newItemValue) this._updateData(item.id, newItemValue)
-                    }}
-                  />
-                }
-
-                if (item.type === 'string') {
-                  div.push(<>
-                    <div style={{
-                      display: 'flex',
-                      width: '100%',
-                      justifyContent: 'space-between',
-                      margin: '12px 0'
-                    }}>
-                      <Text style={{ marginBottom: 12 }}>{item.label} </Text>
-                      {cascader}
-                    </div>
-                    <Input.TextArea rows={4}
-                      value={item.value}
-                      className='scrollbar'
-                      style={{ marginBottom: 12 }}
-                      onChange={(e: any) => {
-                        this._updateData(item.id, e.currentTarget.value);
+                        if (newItemValue) this._updateData(item.id, newItemValue)
                       }}
                     />
-                    <Divider />
-                  </>)
-                };
+                  }
 
-                if (item.type === 'tag') {
-                  div.push(<>
-                    <div style={{
-                      display: 'flex',
-                      width: '100%',
-                      justifyContent: 'space-between',
-                      margin: '12px 0'
-                    }}>
-                      <Text style={{ marginBottom: 12 }}>{item.label} </Text>
-                      {cascader}
-                    </div>
-                    <InputTag
-                      value={item.value}
-                      style={{ marginBottom: 12 }}
-                      onChange={(e: any) => {
-                        this._updateData(item.id, e.currentTarget.value);
-                      }}
-                    />
-                    <Divider />
-                  </>)
+                  if (item.type === 'string') {
+                    div.push(<>
+                      <div style={{
+                        display: 'flex',
+                        width: '100%',
+                        justifyContent: 'space-between',
+                        margin: '12px 0'
+                      }}>
+                        <Text style={{ marginBottom: 12 }}>{item.label} </Text>
+                        {cascader}
+                      </div>
+                      <Input.TextArea rows={4}
+                        value={item.value}
+                        className='scrollbar'
+                        style={{ marginBottom: 12 }}
+                        onChange={(e: any) => {
+                          this._updateData(item.id, e.currentTarget.value);
+                        }}
+                      />
+                      <Divider />
+                    </>)
+                  };
+
+                  if (item.type === 'tag') {
+                    div.push(<>
+                      <div style={{
+                        display: 'flex',
+                        width: '100%',
+                        justifyContent: 'space-between',
+                        margin: '12px 0'
+                      }}>
+                        <Text style={{ marginBottom: 12 }}>{item.label} </Text>
+                        {cascader}
+                      </div>
+                      <InputTag
+                        value={item.value}
+                        style={{ marginBottom: 12 }}
+                        onChange={(e: any) => {
+                          this._updateData(item.id, e.currentTarget.value);
+                        }}
+                      />
+                      <Divider />
+                    </>)
+                  }
+
+
+                  if (item.type === 'block') {
+                    div.push(<>
+                      <div style={{
+                        display: 'flex',
+                        width: '100%',
+                        justifyContent: 'space-between',
+                        margin: '12px 0'
+                      }}>
+                        <Text style={{ marginBottom: 12 }}>{item.label} </Text>
+                        {cascader}
+                      </div>
+                      <InputBlock
+                        value={item.value}
+                        style={{ marginBottom: 12 }}
+                        onChange={(e: any) => {
+                          this._updateData(item.id, e.currentTarget.value);
+                        }}
+                      />
+                      <Divider />
+                    </>)
+                  }
+
+
                 }
+                return div
+              })()
+            }
 
-
-                if (item.type === 'block') {
-                  div.push(<>
-                    <div style={{
-                      display: 'flex',
-                      width: '100%',
-                      justifyContent: 'space-between',
-                      margin: '12px 0'
-                    }}>
-                      <Text style={{ marginBottom: 12 }}>{item.label} </Text>
-                      {cascader}
-                    </div>
-                    <InputBlock
-                      value={item.value}
-                      style={{ marginBottom: 12 }}
-                      onChange={(e: any) => {
-                        this._updateData(item.id, e.currentTarget.value);
-                      }}
-                    />
-                    <Divider />
-                  </>)
+            <Button
+              type="primary"
+              disabled={this.state.isLoading}
+              onClick={() => {
+                // console.log('###', this.state.data)
+                if (this.props.callback) {
+                  this.props.callback({
+                    cmd: 'runPrompt',
+                    data: {
+                      name: this.state.name, data: this.state.data
+                    }
+                  })
                 }
+                this.setState({
+                  isLoading: true
+                })
+              }}>{this.state.isLoading ? <LoadingOutlined /> : i18n.t('runPrompt')}</Button>
 
+            <Button
+              onClick={() => {
+                const { value, label } = this.state.data[0] || {};
+                this.setState({
+                  openModal: true,
+                  savePromptObj: {
+                    label,
+                    value: label,
+                    children: Array.from(value, (v: any) => {
+                      return {
+                        label: v,
+                        value: v
+                      }
+                    })
+                  }
+                })
 
-              }
-              return div
+              }}>{i18n.t('savePrompt')}</Button>
+
+          </Card>
+
+        </Draggable>
+        <Modal
+          title={i18n.t('savePrompt')}
+          open={this.state.openModal}
+          onOk={async () => {
+            this.setState({
+              openModal: false
+            })
+
+            let { filePath, data } = await window.electron.readPath('cascaders')
+            // console.log(this.state.savePromptObj, filePath, data)
+            data = data || [];
+            // let cascaders = JSON.parse(localStorage.getItem("cascaders") || JSON.stringify([]));
+            // console.log(this.state.savePromptObj)
+            data.push(this.state.savePromptObj)
+            window.electron.saveAs(filePath, { isShow: false, _type: 'json', json: data });
+            
+            // TODO 通知cascader更新
+
+            // localStorage.setItem("cascaders", JSON.stringify(cascaders))
+
+          }}
+          // confirmLoading={confirmLoading}
+          onCancel={() => {
+            this.setState({
+              openModal: false
+            })
+          }}
+        >
+          {
+            this.state.savePromptObj && (() => {
+              let prompt = this.state.savePromptObj || {};
+              const { value, label } = prompt;
+
+              return <>
+                <p>Label</p>
+                <Input defaultValue={label} onChange={(e: any) => {
+                  this.setState({
+                    savePromptObj: {
+                      ...prompt,
+                      label: e.target.value
+                    }
+                  })
+                }}></Input>
+                <p>Value</p>
+                <Input defaultValue={value} onChange={(e: any) => {
+                  this.setState({
+                    savePromptObj: {
+                      ...prompt,
+                      value: e.target.value
+                    }
+                  })
+                }}></Input>
+              </>
             })()
           }
-
-          <Button
-            type="primary"
-            disabled={this.state.isLoading}
-            onClick={() => {
-              // console.log('###', this.state.data)
-              if (this.props.callback) {
-                this.props.callback({
-                  cmd: 'runPrompt',
-                  data: {
-                    name: this.state.name, data: this.state.data
-                  }
-                })
-              }
-              this.setState({
-                isLoading: true
-              })
-            }}>{this.state.isLoading ? <LoadingOutlined /> : i18n.t('runPrompt')}</Button>
-
-          <Button
-            onClick={() => {
-              // console.log('###', this.state.data)
-              if (this.props.callback) {
-                this.props.callback({
-                  cmd: 'savePrompt',
-                  data: {
-                    name: this.state.name, data: this.state.data
-                  }
-                })
-              }
-              
-            }}>{i18n.t('savePrompt')}</Button>
-
-        </Card>
-
-      </Draggable>
+        </Modal >
+      </>
     );
   }
 }

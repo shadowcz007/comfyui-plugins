@@ -5,6 +5,8 @@ const fs = require('fs-extra')
 const hash = require('object-hash')
 import server from './server'
 
+const isMac = process.platform == 'darwin'
+
 function copyPNGWithMetadata (sourcePath: any, destinationPath: any) {
   // sharp(sourcePath)
   //   .clone()
@@ -37,7 +39,7 @@ function copyFile (sourcePath: any, destinationPath: any) {
   })
 }
 
-function saveBase64Image (base64String: string, filePath: any) {
+function saveBase64Image (base64String: string, filePath: string) {
   // Remove the data:image/<image-extension>;base64 prefix
   const base64Data = base64String.replace(/^data:image\/\w+;base64,/, '')
 
@@ -54,7 +56,27 @@ function saveBase64Image (base64String: string, filePath: any) {
   })
 }
 
+function saveJSON (data: any, filePath: string) {
+  fs.writeFile(filePath, JSON.stringify(data), (err: any) => {
+    if (err) {
+      console.error('Error saving JSON:', err)
+    } else {
+      console.log('JSON saved successfully!')
+    }
+  })
+}
+
+function readJSON (filePath: string) {
+  console.log(filePath)
+  if (fs.existsSync(filePath)) {
+    let d = fs.readFileSync(filePath, 'utf-8')
+    return d ? JSON.parse(d) : null
+  }
+  return null
+}
+
 const pluginsPaths = path.join(app.getPath('userData'), 'plugins')
+const cascadersPaths = path.join(app.getPath('userData'), 'cascaders.json')
 
 // 遍历文件夹下的文件
 function traverseDirectory (dir: any) {
@@ -151,27 +173,52 @@ const init = (plugins: any) => {
           return server.stop()
         }
 
+      case 'read-file':
+        //data._type
+        let p = cascadersPaths
+        return { data: readJSON(p), filePath: p }
+
       case 'save-as':
         let win: any = BrowserWindow.getFocusedWindow()
-        const { title, originFilePath, defaultPath, base64 } = data
-        const filepath: string =
-          dialog.showSaveDialogSync(win, {
-            title,
-            defaultPath: defaultPath || '',
-            properties: [],
-            filters: [
-              { name: 'Images', extensions: ['jpg', 'png', 'gif'] },
-              // { name: 'Movies', extensions: ['avi', 'mp4'] },
-              // { name: 'JSON', extensions: ['json'] },
-              { name: 'All Files', extensions: ['*'] }
-            ]
-          }) || ''
+        const {
+          title,
+          originFilePath,
+          defaultPath,
+          base64,
+          _type,
+          json,
+          isShow
+        } = data
+        let filepath = defaultPath
+
+        if (isShow) {
+          let filters: any =
+            _type === 'image'
+              ? { name: 'Images', extensions: ['jpg', 'png', 'gif'] }
+              : { name: 'JSON', extensions: ['json'] }
+          filepath =
+            dialog.showSaveDialogSync(win, {
+              title,
+              defaultPath: defaultPath || '',
+              properties: [],
+              filters: [
+                ...filters,
+                // { name: 'Movies', extensions: ['avi', 'mp4'] },
+                // { name: 'JSON', extensions: ['json'] },
+                { name: 'All Files', extensions: ['*'] }
+              ]
+            }) || ''
+        }
 
         if (filepath) {
-          if (originFilePath) {
-            copyFile(originFilePath, filepath)
-          } else if (base64) {
-            saveBase64Image(base64, filepath)
+          if (_type === 'image') {
+            if (originFilePath) {
+              copyFile(originFilePath, filepath)
+            } else if (base64) {
+              saveBase64Image(base64, filepath)
+            }
+          } else if (_type === 'json') {
+            saveJSON(json, filepath)
           }
         }
 
@@ -179,6 +226,18 @@ const init = (plugins: any) => {
         const { setAlwaysOnTop } = data
         let wm = BrowserWindow.getFocusedWindow()
         wm?.setAlwaysOnTop(setAlwaysOnTop)
+
+      case 'getPath':
+        const { type } = data
+        const key = type || 'userData'
+        if (key === 'userData')
+          return isMac
+            ? app
+                .getPath(key)
+                .replace(/Application Support.*/, 'Application Support')
+            : app.getPath(key).replace(/AppData.*/, 'AppData')
+        return app.getPath(key)
+
       default:
         break
     }

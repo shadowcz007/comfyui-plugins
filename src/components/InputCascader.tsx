@@ -18,27 +18,7 @@ interface App {
 }
 
 const options = [
-    {
-        value: 'zhejiang',
-        label: 'Zhejiang',
-        children: [
-            {
-                value: 'hangzhou',
-                label: 'Hangzhou',
-                children: [
-                    {
-                        value: 'xihu',
-                        label: 'West Lake',
-                    },
-                    {
-                        value: 'xiasha',
-                        label: 'Xia Sha',
-                        disabled: true,
-                    },
-                ],
-            },
-        ],
-    },
+    
     {
         value: 'human',
         label: '人物',
@@ -277,20 +257,35 @@ const options = [
 ];
 
 
+declare const window: Window &
+    typeof globalThis & {
+        electron: any,
+    }
+
 class App extends Component {
 
     constructor(props: {} | Readonly<{}>) {
         super(props);
-
-
         this.state = {
-
+            opts: []
         };
-
     }
 
     componentDidMount() {
+        this._init()
+    }
 
+    async _init() {
+        let { filePath, data } = await window.electron.readPath('cascaders');
+        let opts = options;
+        if (data) {
+            opts=[...opts,...data]
+            // opts.push(data);
+        }
+        console.log('_init',opts)
+        this.setState({
+            opts
+        })
     }
 
     filter(inputValue: string, path: any) {
@@ -300,22 +295,22 @@ class App extends Component {
     }
 
     onChange(items: any) {
-        let tags=[];
+        let tags = [];
         for (const item of items) {
-            let m=[...item];
+            let m = [...item];
             tags.push(m.pop())
         }
         this.props.onChange && this.props.onChange({
             currentTarget: {
                 value: tags
-            } 
+            }
         });
     }
     render() {
 
         return (
             <Cascader
-                options={options}
+                options={this.state.opts}
                 onChange={(e) => this.onChange(e)}
                 placeholder="Please select"
                 multiple
