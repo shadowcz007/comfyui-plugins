@@ -67,7 +67,7 @@ class App extends React.Component {
     savePosition(`_${this.state.name}_inputs_position`, e);
   }
 
-  _updateData(id: string, value: any) {
+  async _updateData(id: string, value: any) {
     let newData = Array.from(this.state.data, (d: any) => {
       if (d.id === id) {
         d.value = value;
@@ -78,17 +78,47 @@ class App extends React.Component {
       data: newData
     })
 
+    this._updateInputData(newData);
+
+  }
+
+  async _updateInputData(newData: any) {
     // 全局共享
     window.electron.global('input', newData);
-    // this.props.callback({
-    //   cmd:'onChange',
-    //   data:{value:newData}
-    // })
+
+    let { filePath, data } = await window.electron.readPath('input')
+    // console.log(filePath)
+    data = data || {};
+
+    data[this.state.id] = {
+      data: newData,
+      plugin: {
+        id: this.state.id,
+        name: this.state.name
+      }
+    }
+
+    window.electron.saveAs(filePath, { isShow: false, _type: 'json', json: data });
+  }
+
+  async _loadInput() {
+    let { filePath, data } = await window.electron.readPath('input')
+    data = data || {};
+    if (data[this.state.id] && data[this.state.id].data) {
+      this.setState({
+        data: data[this.state.id].data
+      })
+    }
+
   }
 
   componentDidMount() {
+
+    this._loadInput();
+
     // this.setupConnection();
     onCardFocus(`_${this.state.name}_inputs_position`);
+
     window.electron.comfyApi('getQueue').then((res: any) => {
       const { Running, Pending } = res;
       this.setState({ Running, Pending })
@@ -148,14 +178,14 @@ class App extends React.Component {
         }
       }
 
-      if (event === 'progress') {
-        const { value, max } = d2;
+      // if (event === 'progress') {
+      //   const { value, max } = d2;
 
-        this.setState({
-          progress: 100 * value / max
-        })
+      //   this.setState({
+      //     progress: Math.round(100 * value / max)
+      //   })
 
-      }
+      // }
 
     })
 
@@ -215,14 +245,13 @@ class App extends React.Component {
           // actions={actions}
           >
 
-            {
+            {/* {
               <>
-                {/* <>{this.state.id}</>
-               */}
+              
                 {this.state.progress <= 100 && <Progress steps={5} percent={this.state.progress} />}
-                {/* <Divider /> */}
+         
               </>
-            }
+            } */}
 
             {
               this.state.data?.length > 0 && (() => {
@@ -386,7 +415,7 @@ class App extends React.Component {
             // console.log(this.state.savePromptObj)
             data.push(this.state.savePromptObj)
             window.electron.saveAs(filePath, { isShow: false, _type: 'json', json: data });
-            
+
             // TODO 通知cascader更新
 
             // localStorage.setItem("cascaders", JSON.stringify(cascaders))

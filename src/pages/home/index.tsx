@@ -2,7 +2,7 @@
 import { createRoot } from "react-dom/client";
 import React from "react";
 import { useEffect } from "react";
-import { Button, ConfigProvider, Space, message, Card, Image, Dropdown } from 'antd';
+import { Button, ConfigProvider, Space, message, Card, Spin, Progress } from 'antd';
 import { PlusOutlined, DashboardOutlined } from '@ant-design/icons';
 const hash = require('object-hash');
 
@@ -109,7 +109,7 @@ export const App = () => {
 
     // 运行插件
     const runPluginByName = async (name: string, inputs: any) => {
-
+        return setProgress(10)
         let plugin = await initPlugin(name);
         // console.log('extensionPoints',extensionPoints.get('app'))
 
@@ -391,7 +391,7 @@ export const App = () => {
 
             if (event === 'progress') {
                 const { value, max } = data;
-                setProgress(100 * value / max)
+                setProgress(Math.round(100 * value / max))
             }
 
             if (event === 'b_preview') {
@@ -420,6 +420,14 @@ export const App = () => {
                 },
             }}
         >
+
+            {progress <= 100 && <div className="loading">
+                <Spin />
+                <br></br>
+                <Progress steps={5} percent={progress} />
+            </div>}
+
+
 
             <Space
                 className="menu-btns"

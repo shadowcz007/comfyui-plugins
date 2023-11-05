@@ -6,5 +6,7 @@
     "Workflow_Plugins":"工作流/插件",
     "Install":"安装",
     "getQueue":"getQueue",
-    "change view":"切换视图"
+    "change view":"切换视图",
+    "savePrompt":"保存",
+    "runPrompt":"运行"
 }

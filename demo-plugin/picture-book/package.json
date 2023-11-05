@@ -9,8 +9,8 @@
     "init"
   ],
   "scripts": {
-    "rm": "rimraf picture-book-1.0.0.tgz",
-    "package": "rimraf picture-book-1.0.0.tgz && npm pack"
+    "rm": "rimraf ../../store/picture-book-1.0.0.tgz",
+    "package": "rimraf ../../store/picture-book-1.0.0.tgz && npm pack --pack-destination ../../store/"
   },
   "devDependencies": {
     "rimraf": "^3.0.2"

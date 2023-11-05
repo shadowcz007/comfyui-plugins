@@ -1,5 +1,5 @@
 {
-  "name": "comfyui-workflow-api",
+  "name": "character-workflow",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,8 +9,8 @@
     "init"
   ],
   "scripts": {
-    "rm": "rimraf ../../store/comfyui-workflow-api-1.0.0.tgz",
-    "package": "rimraf ../../store/comfyui-workflow-api-1.0.0.tgz && npm pack --pack-destination ../../store/"
+    "rm": "rimraf ../../store/character-workflow-1.0.0.tgz",
+    "package": "rimraf ../../store/character-workflow-1.0.0.tgz && npm pack --pack-destination ../../store/"
   },
   "devDependencies": {
     "rimraf": "^3.0.2"

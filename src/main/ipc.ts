@@ -68,7 +68,7 @@ function saveJSON (data: any, filePath: string) {
 
 function readJSON (filePath: string) {
   console.log(filePath)
-  if (fs.existsSync(filePath)) {
+  if (filePath && fs.existsSync(filePath)) {
     let d = fs.readFileSync(filePath, 'utf-8')
     return d ? JSON.parse(d) : null
   }
@@ -76,7 +76,12 @@ function readJSON (filePath: string) {
 }
 
 const pluginsPaths = path.join(app.getPath('userData'), 'plugins')
+
+// 存储prompt的种子词
 const cascadersPaths = path.join(app.getPath('userData'), 'cascaders.json')
+
+// 存储input
+const inputPaths = path.join(app.getPath('userData'), 'inputs.json')
 
 // 遍历文件夹下的文件
 function traverseDirectory (dir: any) {
@@ -175,7 +180,19 @@ const init = (plugins: any) => {
 
       case 'read-file':
         //data._type
-        let p = cascadersPaths
+        let p = 'cascaders'
+
+        switch (data._type) {
+          case 'cascaders':
+            p = cascadersPaths
+            break
+          case 'input':
+            p = inputPaths
+            break
+          default:
+            break
+        }
+
         return { data: readJSON(p), filePath: p }
 
       case 'save-as':

@@ -186,7 +186,7 @@ class App extends Component {
                         <Tag
                             key={tag}
                             closable={index >= 0}
-                            style={{ userSelect: 'none' }}
+                            style={{ userSelect: 'none', cursor: 'pointer' }}
                             onClose={() => this.handleClose(tag)}
                         >
                             <span
@@ -221,14 +221,20 @@ class App extends Component {
                     />
                 ) : (
                     <>
-                        <Tag icon={<PlusOutlined />} onClick={this.showInput}>
+                        <Tag icon={<PlusOutlined />}
+                            style={{ userSelect: 'none', cursor: 'pointer' }}
+                            onClick={this.showInput}>
                             {i18n.t('New Tag')}
                         </Tag>
-                        <Tag icon={<PlusOutlined />} onClick={this.pasteTag}>
+                        <Tag icon={<PlusOutlined />}
+                            style={{ userSelect: 'none', cursor: 'pointer' }}
+                            onClick={this.pasteTag}>
                             {i18n.t('Paste Tag')}
                         </Tag>
                         {
-                            this.state.tags.length > 0 && <Tag icon={<DeleteOutlined />} onClick={() => this.clear()}>
+                            this.state.tags.length > 0 && <Tag
+                                style={{ userSelect: 'none', cursor: 'pointer' }}
+                                icon={<DeleteOutlined />} onClick={() => this.clear()}>
                                 {i18n.t('Clear')}
                             </Tag>
                         }

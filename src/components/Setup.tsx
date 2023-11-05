@@ -163,7 +163,7 @@ class App extends React.Component {
                                     })
                                     console.log('updateUrl', res)
                                     // localStorage.setItem('hostUrl', `http://${url}`);
-                                    
+
                                 }}
                             >{serverStatus ? i18n.t('refreshUrl') : i18n.t('serverError')}</Button>
                         </Space.Compact>
@@ -218,14 +218,15 @@ class App extends React.Component {
                     <Button
                         onClick={async () => {
                             let bg: any = document.querySelector('#bg')
-                            if (bg.style.display == 'none') {
+                            console.log(bg.style.display)
+                            if (bg.style.display === 'none' || bg.style.display == '') {
                                 bg.style.display = 'block'
                             } else {
                                 bg.style.display = 'none'
                             }
 
                             // 发到main，
-                            window.electron.setAlwaysOnTop(bg.style.display == 'none')
+                            // window.electron.setAlwaysOnTop(bg.style.display == 'none')
 
                         }}
                     >{i18n.t('bg')}</Button>

@@ -182,9 +182,10 @@ class App extends Component {
                     if (editInputIndex === index) {
                         return (
                             <Input.TextArea
+                                className='scrollbar'
                                 ref={this.editInputRef}
                                 key={tag}
-                                autoSize={{ minRows: 3, maxRows: 5 }}
+                                autoSize={{ minRows: 3, maxRows: 12 }}
                                 value={editInputValue}
                                 onChange={this.handleEditInputChange}
                                 onBlur={this.handleEditInputConfirm}
@@ -216,9 +217,10 @@ class App extends Component {
                 })}
                 {inputVisible ? (
                     <Input.TextArea
+                        className='scrollbar'
                         ref={this.inputRef}
                         value={inputValue}
-                        autoSize={{ minRows: 3, maxRows: 5 }}
+                        autoSize={{ minRows: 3, maxRows: 12 }}
                         onChange={this.handleInputChange}
                         onBlur={this.handleInputConfirm}
                         onPressEnter={this.handleInputConfirm}
