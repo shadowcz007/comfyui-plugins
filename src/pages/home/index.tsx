@@ -109,7 +109,7 @@ export const App = () => {
 
     // 运行插件
     const runPluginByName = async (name: string, inputs: any) => {
-        return setProgress(10)
+        // return setProgress(10)
         let plugin = await initPlugin(name);
         // console.log('extensionPoints',extensionPoints.get('app'))
 
