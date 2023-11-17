@@ -11,6 +11,7 @@ const { Meta } = Card;
 
 import { setup, plugins, extensionPoints, activationPoints } from 'pluggable-electron/renderer'
 
+
 import ItemList from '../../components/ItemList'
 import Inputs from '../../components/Inputs'
 import OutputImages from '../../components/OutputImages'
@@ -94,14 +95,25 @@ export const App = () => {
     // 获取插件的输入
     const getInput = async (name: string) => {
         let plugin = await initPlugin(name);
-        // console.log('extensionPoints', extensionPoints.get('app'))
+        console.log('extensionPoints', name, extensionPoints.get(name))
         if (extensionPoints.get(name)) extensionPoints.execute(name, {
             event: 'get-input',
             data: {
                 callback: async (result: any) => {
-                    // console.log('#get-input', result)
-                    setInput({ name, id: plugin.id, data: result });
-                    window.electron.global('input', result)
+                    console.log('#get-input', result)
+                    localStorage.setItem('get-input', JSON.stringify({
+                        input: result,
+                        name
+                    }))
+                    if (result.filter((t: any) => t.type === 'image')[0]) {
+                        // 调用draw界面
+                        window.electron.openDraw(result)
+                    } else {
+
+                        setInput({ name, id: plugin.id, data: result });
+                        window.electron.global('input', result)
+                    }
+
                 }
             }
         })
@@ -111,7 +123,7 @@ export const App = () => {
     const runPluginByName = async (name: string, inputs: any) => {
         // return setProgress(10)
         let plugin = await initPlugin(name);
-        // console.log('extensionPoints',extensionPoints.get('app'))
+        console.log('runPluginByName extensionPoints', extensionPoints.get(name), inputs)
 
         // TODO 需要提供一个校对节点是否有效的功能
 
@@ -264,11 +276,20 @@ export const App = () => {
         });
         window.addEventListener('message', async (res: any) => {
             console.log('###message', res.data?.data, pluginItems)
-            const { event, data } = res.data?.data;
+
+            const { event, cmd, data } = res.data?.data;
+
             setStatus({
                 data,
-                event
+                event: event || cmd
             })
+
+            if ((event || cmd) === 'runPrompt') {
+                const { name, data: d } = data;
+                runPluginByName(name, d)
+            };
+
+
             if (event == 'executed') {
 
                 const res_prompt_id = data.prompt_id;
@@ -285,7 +306,7 @@ export const App = () => {
 
                 console.log('###executed', data, workflow, plugin, node);
 
-                // 暂时只支持mixlab自定义节点
+                // 支持mixlab自定义节点
                 if (node.class_type == "TransparentImage") {
                     let title = node.inputs.filename_prefix;
                     // 运行时只有这种
@@ -370,6 +391,7 @@ export const App = () => {
                         }
                     })
                 }
+                setProgress(101)
             };
 
             if (event == 'close-input') {
@@ -530,7 +552,7 @@ export const App = () => {
                             setDisplayWorkflowPlugins(show);
 
                             // let items = await window.electron.getPluginsList();
-                            // console.log(items)
+                            // console.log(data)
                         } else if (cmd == 'run') {
                             const { name } = data;
                             if (name) {

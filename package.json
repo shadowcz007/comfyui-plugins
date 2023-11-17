@@ -28,6 +28,7 @@
   "dependencies": {
     "@ant-design/icons": "^5.2.6",
     "@electron/remote": "^2.0.12",
+    "@excalidraw/excalidraw": "^0.17.0",
     "antd": "^5.10.1",
     "electron-context-menu": "^3.6.1",
     "electron-fetch": "^1.9.1",
@@ -43,7 +44,6 @@
     "react-dom": "^18.2.0",
     "react-draggable": "^4.4.6",
     "react-i18next": "^13.0.2",
-    "sharp": "^0.32.6",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
@@ -80,6 +80,7 @@
     "mini-css-extract-plugin": "^2.7.6",
     "native-ext-loader": "^2.3.0",
     "npm-run-all": "^4.1.5",
+    "process": "^0.11.10",
     "rimraf": "^5.0.1",
     "ts-loader": "^9.4.3",
     "ts-node": "^10.9.1",

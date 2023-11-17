@@ -1,4 +1,4 @@
-import { Configuration } from "webpack";
+import { Configuration,ProvidePlugin  } from "webpack";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import CopyPlugin from 'copy-webpack-plugin'
@@ -77,7 +77,8 @@ const renderer: Configuration = {
   ...common,
   target: "electron-renderer",
   entry: {
-    home: "./src/pages/home/index.tsx"
+    home: "./src/pages/home/index.tsx",
+    draw: "./src/pages/draw/index.tsx"
   },
   plugins: [
     new MiniCssExtractPlugin(),
@@ -87,6 +88,15 @@ const renderer: Configuration = {
       filename: "home.html",
       chunks: ["home"],
     }),
+    new HtmlWebpackPlugin({
+      inject: "body",
+      template: "./src/pages/draw/index.html",
+      filename: "draw.html",
+      chunks: ["draw"],
+    }),
+    new ProvidePlugin({
+      process: 'process/browser',
+}),
   ],
 };
 

@@ -135,6 +135,7 @@ const electronHandler = {
   getCurrentWindow: () => remote.BrowserWindow.getFocusedWindow(),
   openInstallFile: () => {
     let w: any = remote.BrowserWindow.getFocusedWindow()
+    // w.setAlwaysOnTop(false)
     const filepath: string =
       remote.dialog.showOpenDialogSync(w, {
         title: '保存',
@@ -142,24 +143,32 @@ const electronHandler = {
         properties: ['openFile'],
         filters: [{ name: 'All Files', extensions: ['*'] }]
       }) || ''
+    // w.setAlwaysOnTop(true)
     return filepath
   },
-  getPath: (key: string='userData') => {
+  getPath: (key: string = 'userData') => {
     return ipcRenderer.invoke('main:handle', {
       cmd: 'getPath',
       data: { type: key }
     })
   },
-  readPath: (  _type = 'cascaders') => {
+  readPath: (_type = 'cascaders') => {
     return ipcRenderer.invoke('main:handle', {
       cmd: 'read-file',
-      data: { _type  }
+      data: { _type }
     })
   },
   isDebug,
   platform: process.platform,
   pasteText: () => {
     return clipboard.readText()
+  },
+  openDraw: (initData: any) => {
+    // TODO 初始化的数据
+
+    return ipcRenderer.invoke('main:handle', {
+      cmd: 'open-draw'
+    })
   },
   executeJavaScript: (code: string) => {
     return ipcRenderer.invoke('main:handle', {
@@ -215,6 +224,33 @@ const electronHandler = {
       const { route } = data || {}
       return api.apiURL(route || '')
     }
+  },
+  uploadFile: async (file: string | Blob) => {
+    try {
+      // Wrap file in formdata so it includes filename
+      const body = new FormData()
+      body.append('image', file)
+      // if (pasted) body.append('subfolder', 'pasted')
+      const resp = await api.fetchApi('/upload/image', {
+        method: 'POST',
+        body
+      })
+
+      if (resp.status === 200) {
+        const data = await resp.json()
+        // Add the file to the dropdown list and update the widget value
+        let path = data.name
+        if (data.subfolder) path = data.subfolder + '/' + path
+        return path
+      } else {
+        alert(resp.status + ' - ' + resp.statusText)
+      }
+    } catch (error) {
+      alert(error)
+    }
+  },
+  sendToHome: (obj: any) => {
+    return ipcRenderer.invoke('main:handle', obj)
   },
   server: (isStart: boolean, port: number, path: string, html: string) =>
     ipcRenderer.invoke('main:handle', {

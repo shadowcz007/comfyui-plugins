@@ -40,7 +40,7 @@ body {
 }
 .loading{
     position: absolute;
-    top: 45vh;
+    bottom: 120px;
     left: 45vw;
     display: flex;
     flex-direction: column;

@@ -1,4 +1,4 @@
-const { ipcMain, BrowserWindow, app, dialog } = require('electron')
+const { ipcMain, BrowserWindow, app, dialog, screen } = require('electron')
 const path = require('path')
 // const sharp = require('sharp');
 const fs = require('fs-extra')
@@ -6,6 +6,9 @@ const hash = require('object-hash')
 import server from './server'
 
 const isMac = process.platform == 'darwin'
+const isDebug = !!process?.env.npm_lifecycle_script?.match('--DEV')
+
+let drawWin: any = null
 
 function copyPNGWithMetadata (sourcePath: any, destinationPath: any) {
   // sharp(sourcePath)
@@ -136,11 +139,17 @@ const getMoreInfo = () => {
   return info
 }
 
-const init = (plugins: any) => {
+const init = (plugins: any, mainWindow: any, createDrawWindow: any) => {
   ipcMain.handle('main:handle', async (event, args) => {
     console.log('main:handle', args)
     const { cmd, data } = args
     switch (cmd) {
+      case 'runPrompt':
+        const d = JSON.stringify({ data: { cmd, data } })
+        mainWindow?.webContents.executeJavaScript(`
+        window.postMessage(${d})
+        `)
+        return 1
       case 'plugins-list':
         const pluginManager = plugins.getStore()
 
@@ -244,6 +253,16 @@ const init = (plugins: any) => {
         let wm = BrowserWindow.getFocusedWindow()
         wm?.setAlwaysOnTop(setAlwaysOnTop)
 
+      case 'open-draw':
+        // console.log(drawWindow)
+        if (createDrawWindow) {
+          if (!drawWin || drawWin?.isDestroyed()) {
+            drawWin = createDrawWindow()
+          } else {
+            drawWin.show()
+          }
+        }
+        return
       case 'getPath':
         const { type } = data
         const key = type || 'userData'

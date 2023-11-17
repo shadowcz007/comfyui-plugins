@@ -42,12 +42,9 @@ function createWindow () {
       spellcheck: false
     }
   })
-
+ 
   require('@electron/remote/main').initialize()
   require('@electron/remote/main').enable(mainWindow.webContents)
-
-  // ipc监听
-  ipc.init(pe)
 
   // and load the index.html of the app.
   mainWindow.loadFile('dist/home.html')
@@ -65,6 +62,48 @@ function createWindow () {
     globalShortcut.register('CommandOrControl+Shift+L', () => {
       mainWindow?.webContents.toggleDevTools()
     })
+
+  // const drawWindow = createDrawWindow()
+  // ipc监听
+  ipc.init(pe, mainWindow, createDrawWindow)
+}
+
+function createDrawWindow () {
+  const vw = screen.getPrimaryDisplay().workAreaSize.width
+  const vh = screen.getPrimaryDisplay().workAreaSize.height
+  // Create the browser window.
+  const drawWindow = new BrowserWindow({
+    x: 0,
+    y: 0,
+    width: vw - 400,
+    height: vh,
+    // type: 'toolbar', //创建的窗口类型为工具栏窗口
+    frame: false, //要创建无边框窗口
+    resizable: false,
+    show: true,
+    transparent: false,
+    hasShadow: false,
+    // alwaysOnTop: true,
+    webPreferences: {
+      preload: path.resolve(__dirname, 'preload.js'),
+      sandbox: false,
+      // navigateOnDragDrop: true, //支持直接拖文件进来
+      autoplayPolicy: 'user-gesture-required',
+      spellcheck: false
+    }
+  })
+
+  require('@electron/remote/main').enable(drawWindow.webContents)
+  // and load the index.html of the app.
+  drawWindow.loadFile('dist/draw.html')
+  // drawWindow.setIgnoreMouseEvents(true, { forward: true })
+
+  // Open the DevTools.
+  if (isDebug)
+    setTimeout(
+      () => drawWindow.webContents.openDevTools({ mode: 'detach' }),
+      2000
+    )
 }
 
 // This method will be called when Electron has finished
@@ -93,11 +132,9 @@ app.whenReady().then(() => {
 
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
-  });
+  })
 
-
-  initTray();
-
+  initTray()
 })
 
 // explicitly with Cmd + Q.
@@ -114,7 +151,6 @@ function initTray () {
     )
 
     tray = new Tray(icon)
- 
 
     // const contextMenu = Menu.buildFromTemplate([
     //   {
@@ -166,8 +202,6 @@ function initTray () {
 
     tray.setToolTip(`${1}`)
 
-    tray.on('click', () => {
-       
-    })
+    tray.on('click', () => {})
   }
 }

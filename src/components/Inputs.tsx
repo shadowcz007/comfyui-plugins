@@ -206,7 +206,7 @@ class App extends React.Component {
     return (
       <>
         <Draggable handle="strong"
-          defaultClassName={`react-draggable _${this.state.name}_inputs_position`}
+          defaultClassName={`react-draggable_${this.state.name}_inputs_position`}
           defaultPosition={this._defaultPosition}
           onDrag={(e) => this._savePosition(e)}
           onStop={(e) => this._savePosition(e)}
