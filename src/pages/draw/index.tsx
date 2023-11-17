@@ -36,10 +36,10 @@ function calculateCanvasSize(arr: any) {
         const rightX = x + width;
         const bottomY = y + height;
 
-        if(minX===null) minX=x;
-        if(minY===null) minY=y;
-        if(maxX===null) maxX=rightX;
-        if(maxY===null) maxY=bottomY;
+        if (minX === null) minX = x;
+        if (minY === null) minY = y;
+        if (maxX === null) maxX = rightX;
+        if (maxY === null) maxY = bottomY;
 
         if (x < minX) {
             minX = x;
@@ -71,6 +71,7 @@ function getInputOfPrompt() {
     if (input?.length > 0) {
         let node = input.filter((inp: any) => inp.type === 'string')[0]
         if (node) {
+            console.log(node.value)
             return node.value
         }
     }
@@ -80,7 +81,10 @@ function getInputOfPrompt() {
 export const App = () => {
     const [excalidrawAPI, setExcalidrawAPI]: any = useState(null);
     const [canvasUrl, setCanvasUrl] = useState("");
-    const [prompt, setPrompt] = useState('');
+
+    let p = getInputOfPrompt()
+
+    const [prompt, setPrompt] = useState(p||'');
 
     const getInput = async () => {
         if (!excalidrawAPI) {
@@ -89,7 +93,7 @@ export const App = () => {
 
         const elements = excalidrawAPI.getSceneElements().filter((e: any) => {
             if (e.type == 'text') return e.text.trim()
-            console.log(e.type, e.width,e.height)
+            console.log(e.type, e.width, e.height)
             return e.width && e.height
         });
 
@@ -156,8 +160,9 @@ export const App = () => {
     }
 
     useEffect(() => {
-        let prompt = getInputOfPrompt()
-        if (prompt) setPrompt(prompt)
+        
+        // console.log(prompt)
+        // if (prompt) setPrompt(prompt)
         // console.log('#useEffect')
         // excalidrawAPI?.onChange(() => {
         //     const elements = excalidrawAPI.getSceneElements().filter((e: any) => {
@@ -171,7 +176,7 @@ export const App = () => {
         //         getInput(canvasUrl)
         //     }
         // })
-        excalidrawAPI?.onPointerUp(()=>getInput());
+        excalidrawAPI?.onPointerUp(() => getInput());
 
         return () => {
             // if (backFn) {
@@ -197,18 +202,18 @@ export const App = () => {
             }}>
 
                 <TextArea
-                    defaultValue={prompt}
+                    value={prompt}
                     style={{
                         width: '60%'
                         // backgroundColor: 'black',
                         // borderRadius: '100%'
                     }}
                     onChange={(e: any) => {
-                        // console.log(e)
-                        setPrompt(e.currentTarget.value)
+                        console.log(e.target.value)
+                        setPrompt(e.target.value)
                     }}
                     rows={4}
-                    placeholder="maxLength is 6" maxLength={6} />
+                    placeholder="maxLength is 180" maxLength={180} />
 
             </div>
 
@@ -216,15 +221,16 @@ export const App = () => {
             <Button
                 style={{
                     position: 'fixed',
-                    left: 'calc(50% - 44px)',
+                    left: 'calc(50% - 74px)',
                     bottom: 44,
                     height: 56,
-                    width: 56,
+                    width: 148,
                     zIndex: 99999,
                     backgroundColor: 'black',
-                    borderRadius: '100%'
+                    borderRadius: 6,
+                    color:'white'
                 }}
-                onClick={() => getInput()}>###</Button>
+                onClick={() => getInput()}>by Shadow Lab</Button>
             <Excalidraw excalidrawAPI={(api: any) => {
                 console.log(api)
                 setExcalidrawAPI(api)
