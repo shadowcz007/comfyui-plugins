@@ -26,5 +26,8 @@ Plugins are designed based on this idea to provide an interactive interface for 
 ## Case Study
 🎨✨ Real-time design, a real-time image design tool based on LCM-Lora, using whiteboard tools to obtain instant modification of image results. 
 
+https://github.com/shadowcz007/comfyui-plugins/assets/12645064/4a8e3e7f-7e9e-4525-855b-f1316ec06f3c
+
+
 
 
