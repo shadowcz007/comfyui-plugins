@@ -1,4 +1,4 @@
-body {
+/* body {
     margin: 0;
     padding: 0;
     width: 100vw;
@@ -6,4 +6,12 @@ body {
     width: fit-content;
     overflow: hidden;
     user-select: none;
-}
+} */
+
+
+/* #root .excalidraw {
+    --color-primary: rgb(201, 252, 198);
+    --color-primary-darker: #a0f783;
+    --color-primary-darkest: #49e66e;
+    --color-primary-light: #a9f2b8;
+} */
