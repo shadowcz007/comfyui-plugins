@@ -30,6 +30,9 @@ Plugins就是按照这个思路设计的，提供comfyui应用的交互界面。
 ## 案例
 > 实时设计，基于LCM-Lora的实时图像设计工具，使用白板工具，得到实时修改的图像结果。
 
+https://github.com/shadowcz007/comfyui-plugins/assets/12645064/4a8e3e7f-7e9e-4525-855b-f1316ec06f3c
+
+
 
 
 TODO:
