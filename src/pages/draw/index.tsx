@@ -133,7 +133,7 @@ function getInputOfPrompt() {
     if (input?.length > 0) {
         let node = input.filter((inp: any) => inp.type === 'string')[0]
         if (node) {
-            console.log(node.value)
+            // console.log(node.value)
             return node.value
         }
     }
@@ -145,6 +145,7 @@ export const App = () => {
     const [canvasUrl, setCanvasUrl] = useState("");
     const [canvasObj, setCanvasObj]: any = useState([]);
     const [auto, setAuto] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     let p = getInputOfPrompt()
 
@@ -187,7 +188,7 @@ export const App = () => {
             obj.getDimensions().height != canvasObj.getDimensions().height
         ))) {
             // 新生成 img2img模式
-            console.log('新生成 img2img模式')
+
             setCanvasObj(obj)
             setCanvasUrl(base64);
 
@@ -221,6 +222,11 @@ export const App = () => {
                         name: getInputData.name,
                         data: inputNew
                     }
+                })
+
+                console.log('新生成 img2img模式', {
+                    name: getInputData.name,
+                    data: inputNew
                 })
 
             }
@@ -375,7 +381,11 @@ export const App = () => {
                         borderRadius: 6,
                         color: 'white'
                     }}
-                    onClick={() => getInput()}>Start</Button>
+                    onClick={() => {
+                        setCanvasUrl('')
+                        getInput()
+                        setLoading(true)
+                    }}>Start{loading?'*':''}</Button>
                 <Switch
                     checkedChildren={<CheckOutlined />}
                     unCheckedChildren={<CloseOutlined />}
